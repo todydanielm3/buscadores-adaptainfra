@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-def buscar_orcid(query, max_results=5):
+def buscar_orcid(query, max_results=100):
     """
     Consulta a API pública da ORCID por pesquisadores.
     """
@@ -27,10 +27,10 @@ def obter_detalhes_orcid(orcid_id: str) -> dict:
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         summary = response.json() or {}
-
+        
         # Extração do nome do especialista
         name_info = summary.get('name') or {}
-        credit_name = name_info.get("credit-name") or {}  # Fallback para {} se for None
+        credit_name = name_info.get("credit-name") or {}  # fallback se None
         if credit_name.get("value"):
             person_name = credit_name.get("value")
         else:
@@ -49,45 +49,39 @@ def obter_detalhes_orcid(orcid_id: str) -> dict:
     except requests.RequestException:
         return {"name": "Nome não disponível", "bio": "Bio não disponível.", "institution": "Instituição não informada"}
 
-def filtrar_dados_simulados(idx: int, filtro_pais: str, filtro_area: str, filtro_idioma: str) -> dict:
+def filtrar_dados_simulados(idx: int, filtro_area: str) -> dict:
     """
-    Gera dados simulados para os filtros e verifica se correspondem
-    aos filtros selecionados.
+    Simula dados para o filtro de área de forma cíclica.
     """
-    # Dados simulados para demonstração
-    idioma = "Português" if idx % 3 == 0 else "Espanhol"
-    area = "Infraestrutura Sustentável" if idx % 2 == 0 else "Auditoria Pública"
-    pais = "Brasil" if idx % 2 == 0 else "México"
-    
-    if (filtro_pais != "Todos" and filtro_pais != pais) or \
-       (filtro_area != "Todas" and filtro_area != area) or \
-       (filtro_idioma != "Todos" and filtro_idioma != idioma):
+    areas = [
+        "AUDITORIA", "AMBIENTAL", "ECONÔMICO", 
+        "SOCIAL", "TÉCNICO", "POLÍTICO E GOVERNAMENTAL", "REGIÃO AMAZÔNICA"
+    ]
+    area_simulada = areas[idx % len(areas)]
+    if filtro_area != "Todas" and filtro_area != area_simulada:
         return {}
-    
-    return {"idioma": idioma, "area": area, "pais": pais}
+    return {"area": area_simulada}
 
 def show_especialistas():
     st.image("logo.png", width=250)
     st.title("🔎 Repositório de Especialistas")
-    st.write("Pesquise por especialistas em infraestrutura sustentável, adaptação climática, auditoria pública e mais.")
+    st.write("Pesquise por especialistas com base em sua especialidade e área de atuação.")
     
-    query = st.text_input("Digite um termo de busca (ex: biodiversidade, gênero, auditoria)")
+    # Campo de busca: Especialidade
+    especialidade = st.text_input("Especialidade")
     
-    # Filtros: País, Área e Idioma
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        filtro_pais = st.selectbox("País", ["Todos", "Brasil", "México", "Argentina", "Bolívia", "Chile", "Colômbia", "Costa Rica", "Cuba", "Equador", "El Salvador", "Guatemala", "Honduras", "Nicarágua", "Panamá", "Paraguai", "Peru", "República Dominicana", "Uruguai", "Venezuela", "Belize", "Guiana", "Caribe"])
-    with col2:
-        filtro_area = st.selectbox("Área", ["Todas", "Infraestrutura Sustentável", "Auditoria Pública", "Biodiversidade", "Tecnologia e TICs"])
-    with col3:
-        filtro_idioma = st.selectbox("Idioma", ["Todos", "Português", "Espanhol", "Inglês"])
+    # Filtro: Área
+    filtro_area = st.selectbox("Área", [
+        "Todas", "AUDITORIA", "AMBIENTAL", "ECONÔMICO",
+        "SOCIAL", "TÉCNICO", "POLÍTICO E GOVERNAMENTAL", "REGIÃO AMAZÔNICA"
+    ])
     
     if st.button("Buscar"):
-        if not query.strip():
-            st.warning("Digite um termo válido.")
+        if not especialidade.strip():
+            st.warning("Digite uma especialidade.")
         else:
-            st.info(f"Buscando por: '{query}' ...")
-            resultados = buscar_orcid(query)
+            st.info(f"Buscando por especialistas em: '{especialidade}' ...")
+            resultados = buscar_orcid(especialidade)
             if not resultados:
                 st.warning("Nenhum especialista encontrado.")
             else:
@@ -97,19 +91,17 @@ def show_especialistas():
                     orcid_id = orcid_info.get('path', 'N/A')
                     profile_url = f"https://orcid.org/{orcid_id}"
                     
-                    # Obter dados reais do especialista (nome, bio e instituição)
+                    # Obter dados reais do especialista
                     detalhes = obter_detalhes_orcid(orcid_id)
                     name = detalhes.get("name", f"Especialista {idx}")
                     bio = detalhes.get("bio")
                     institution = detalhes.get("institution")
                     
-                    # Aplicar dados simulados para os filtros
-                    dados_simulados = filtrar_dados_simulados(idx, filtro_pais, filtro_area, filtro_idioma)
+                    # Aplicar filtro simulado para área
+                    dados_simulados = filtrar_dados_simulados(idx, filtro_area)
                     if not dados_simulados:
                         continue
-                    idioma_exemplo = dados_simulados.get("idioma")
                     area_exemplo = dados_simulados.get("area")
-                    pais_exemplo = dados_simulados.get("pais")
                     
                     with st.container():
                         col_img, col_info = st.columns([1, 4])
@@ -118,11 +110,7 @@ def show_especialistas():
                         with col_info:
                             st.markdown(f"### {name}")
                             st.markdown(f"🔗 [Perfil ORCID]({profile_url})")
-                            st.markdown(
-                                f"📍 **País:** {pais_exemplo}   |   "
-                                f"🧭 **Área:** {area_exemplo}   |   "
-                                f"🗣️ **Idioma:** {idioma_exemplo}"
-                            )
+                            st.markdown(f"🧭 **Área:** {area_exemplo}")
                             st.markdown(f"🏢 **Instituição:** {institution}")
                             bio_text = bio if len(bio) <= 250 else bio[:250] + "..."
                             st.markdown(f"📝 {bio_text}")
