@@ -75,20 +75,19 @@ def show_especialistas():
         f"""
         <div style="text-align: center; margin-bottom: 30px;">
             <img src="data:image/png;base64,{logo_base64}" width="150">
-            <h1 style="font-family: 'Roboto', sans-serif; color: #333;">Repositório de Especialistas</h1>
-            <p style="font-family: 'Roboto', sans-serif;">Conectando pesquisa e profissionais</p>
+            <h1 style="font-family: 'Roboto', sans-serif; color: #333;">Repositório de Expertos</h1>
         </div>
         """,
         unsafe_allow_html=True
     )
     
     # Campo de busca: Especialidade
-    especialidade = st.text_input("Especialidade")
+    especialidade = st.text_input("Especialidad")
     
     # Filtro: Área
     filtro_area = st.selectbox("Área", [
-        "Todas", "AUDITORIA", "AMBIENTAL", "ECONÔMICO",
-        "SOCIAL", "TÉCNICO", "POLÍTICO E GOVERNAMENTAL", "REGIÃO AMAZÔNICA"
+        "Todos", "AUDITORÍA", "AMBIENTAL", "ECONÓMICO",
+"SOCIAL", "TÉCNICO", "POLÍTICO Y GUBERNAMENTAL", "AMAZÓNICO"
     ])
     
     if st.button("Buscar"):
@@ -130,7 +129,7 @@ def show_especialistas():
                             bio_text = bio if len(bio) <= 250 else bio[:250] + "..."
                             st.markdown(f"📝 {bio_text}")
                         st.markdown("---")
-    if st.button("Voltar ao Menu"):
+    if st.button("volver al menú"):
         st.session_state.page = "menu"
         if hasattr(st, "experimental_rerun"):
             st.experimental_rerun()

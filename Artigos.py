@@ -46,7 +46,6 @@ def show_inteligente():
         <div style="text-align: center; margin-bottom: 30px;">
             <img src="data:image/png;base64,{logo_base64}" width="150">
             <h1 style="font-family: 'Roboto', sans-serif; color: #333;">Búsqueda inteligente</h1>
-            <p style="font-family: 'Roboto', sans-serif;">Conectando pesquisadores com publicações acadêmicas</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -58,20 +57,20 @@ def show_inteligente():
     st.write("Filtrar por:")
     col1, col2, col3 = st.columns(3)
     with col1:
-        continente = st.selectbox("Continente", ["Todos", "América", "Europa", "Ásia", "África", "Oceania"])
+        continente = st.selectbox("Continente", ["Todo", "América", "Europa", "Asia", "África", "Oceania"])
     with col2:
-        idioma = st.selectbox("Idioma", ["Todos", "Português", "Espanhol", "Inglês", "Francês", "Alemão"])
+        idioma = st.selectbox("Idioma", ["Todo", "Português", "Espanhol", "Inglês", "Francês", "Alemão"])
     with col3:
         tema = st.selectbox("Tema", [
-            "Todos", 
-            "INFRAESTRUTURA SUSTENTÁVEL",
+            "Todo", 
+            "INFRAESTRUCTURA SOSTENIBLE",
             "AMBIENTAL",
-            "ECONÔMICO",
+            "ECONÓMICO",
             "SOCIAL",
             "TÉCNICO",
-            "POLÍTICO E GOVERNAMENTAL",
-            "REGIÃO AMAZÔNICA",
-            "AUDITORIA"
+            "POLÍTICO Y GUBERNAMENTAL",
+            "REGIÓN AMAZÓNICA",
+            "AUDITORÍA"
         ])
     
     if st.button("Buscar"):
@@ -86,11 +85,11 @@ def show_inteligente():
                 simulated_language = "Português" if idx % 2 == 0 else "Inglês"
                 simulated_continent = "América" if idx % 2 == 0 else "Europa"
                 simulated_theme = "INFRAESTRUTURA SUSTENTÁVEL" if idx % 2 == 0 else "INFRA. SUSTENTÁVEL E ECONÔMIA"
-                if continente != "Todos" and simulated_continent != continente:
+                if continente != "Todo" and simulated_continent != continente:
                     continue
-                if idioma != "Todos" and simulated_language != idioma:
+                if idioma != "Todo" and simulated_language != idioma:
                     continue
-                if tema != "Todos" and simulated_theme != tema:
+                if tema != "Todo" and simulated_theme != tema:
                     continue
                 item["simulated_language"] = simulated_language
                 item["simulated_continent"] = simulated_continent
@@ -130,7 +129,7 @@ def show_inteligente():
                     st.write(f"**Resumo:** {abstract_text[:300]}{'...' if len(abstract_text) > 300 else ''}")
                     st.markdown(f"[Link do Artigo]({link})")
                     
-    if st.button("Voltar ao Menu"):
+    if st.button("volver al menú"):
         st.session_state.page = "menu"
         if hasattr(st, "experimental_rerun"):
             st.experimental_rerun()

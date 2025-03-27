@@ -39,7 +39,6 @@ def show_menu():
     # Converte a logo para base64
     logo_base64 = get_base64_image("logo.png")
     
-    # CSS customizado para o menu
     st.markdown(
         f"""
         <style>
@@ -67,7 +66,7 @@ def show_menu():
         <div class="main-menu">
             <img src="data:image/png;base64,{logo_base64}" width="200">
             <h2>Plataforma AdaptaInfra</h2>
-            <h6>Conectando Pesquisa e Especialistas</h6>
+            <h6>Conectando Investigación y Especialistas</h6>
         </div>
         """,
         unsafe_allow_html=True
@@ -75,13 +74,13 @@ def show_menu():
     
     # Botões dispostos em duas colunas
     col1, col2 = st.columns(2)
-    if col1.button("Buscador Inteligente", key="inteligente", use_container_width=True):
+    if col1.button("Búsqueda inteligente", key="inteligente", use_container_width=True):
         st.session_state.page = "inteligente"
         if hasattr(st, "experimental_rerun"):
             st.experimental_rerun()
         else:
             st.stop()
-    if col2.button("Buscador de Especialistas", key="especialistas", use_container_width=True):
+    if col2.button("Repositorio de expertos", key="especialistas", use_container_width=True):
         st.session_state.page = "especialistas"
         if hasattr(st, "experimental_rerun"):
             st.experimental_rerun()
@@ -89,7 +88,7 @@ def show_menu():
             st.stop()
     
     st.markdown("<div style='padding-top: 50px;'></div>", unsafe_allow_html=True)
-    st.caption("© 2025 AdaptaInfra – GIZ | Desenvolvido por Daniel Moraes")
+    st.caption("© 2025 AdaptaInfra – GIZ | Desarrollado por Daniel Moraes")
 
 if st.session_state.page == "menu":
     show_menu()
