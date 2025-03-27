@@ -10,7 +10,7 @@ def get_base64_image(file_path):
 def invert_abstract(abstract_inverted_index):
     """Converte resumo (abstract) invertido em texto normal."""
     if not abstract_inverted_index:
-        return "Resumo não disponível."
+        return "Resumen no disponible."
     word_positions = []
     for word, positions in abstract_inverted_index.items():
         for pos in positions:
@@ -18,9 +18,9 @@ def invert_abstract(abstract_inverted_index):
     word_positions.sort(key=lambda x: x[0])
     return " ".join(wp[1] for wp in word_positions)
 
-def search_openalex(query: str, max_results=5):
+def search_openalex(query: str, max_results=100):
     """
-    Faz busca na OpenAlex. Retorna lista de dicionários com metadados.
+    Realiza la búsqueda en OpenAlex y retorna una lista de diccionarios con metadatos.
     """
     base_url = "https://api.openalex.org/works"
     params = {
@@ -32,86 +32,83 @@ def search_openalex(query: str, max_results=5):
         response = requests.get(base_url, params=params, timeout=15)
         response.raise_for_status()
     except requests.RequestException as e:
-        st.error(f"[ERRO] Falha na requisição: {e}")
+        st.error(f"[ERROR] Falló la solicitud: {e}")
         return []
     data = response.json()
     results = data.get('results', [])
     return results
 
 def show_inteligente():
-    # Cabeçalho com identidade visual usando a logo convertida em base64
+    # Cabeçalho com identidade visual usando a logo convertida para base64
     logo_base64 = get_base64_image("logo2.png")
     st.markdown(
         f"""
         <div style="text-align: center; margin-bottom: 30px;">
             <img src="data:image/png;base64,{logo_base64}" width="150">
             <h1 style="font-family: 'Roboto', sans-serif; color: #333;">Búsqueda inteligente</h1>
+            <p style="font-family: 'Roboto', sans-serif;">Conectando investigadores con publicaciones académicas</p>
         </div>
         """,
         unsafe_allow_html=True
     )
     
-    st.write("Introduzca un término de búsqueda")
+    st.write("Introduzca un término de búsqueda:")
     query = st.text_input("Término", value=" ")
     
-    st.write("Filtrar por:")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        continente = st.selectbox("Continente", ["Todo", "América", "Europa", "Asia", "África", "Oceania"])
-    with col2:
-        idioma = st.selectbox("Idioma", ["Todo", "Português", "Espanhol", "Inglês", "Francês", "Alemão"])
-    with col3:
-        tema = st.selectbox("Tema", [
-            "Todo", 
-            "INFRAESTRUCTURA SOSTENIBLE",
-            "AMBIENTAL",
-            "ECONÓMICO",
-            "SOCIAL",
-            "TÉCNICO",
-            "POLÍTICO Y GUBERNAMENTAL",
-            "REGIÓN AMAZÓNICA",
-            "AUDITORÍA"
-        ])
+    # Filtro: Tema
+    tema = st.selectbox("Tema", [
+        "Todo", 
+        "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
+        "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
+        "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
+        "INFRAESTRUCTURA SOSTENIBLE, TÉCNICO",
+        "INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL",
+        "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
+        "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"
+    ])
     
     if st.button("Buscar"):
         if not query.strip():
-            st.warning("Por favor, digite algo para pesquisar.")
+            st.warning("Por favor, ingrese un término de búsqueda.")
         else:
-            st.info(f"Pesquisando por: '{query}' ...")
-            items = search_openalex(query, max_results=10)
+            st.info(f"Buscando por: '{query}' y tema: '{tema}' ...")
+            items = search_openalex(query, max_results=30)
             displayed_items = []
-            # Simulação dos filtros: valores simulados baseados no índice
-            for idx, item in enumerate(items, start=1):
-                simulated_language = "Português" if idx % 2 == 0 else "Inglês"
-                simulated_continent = "América" if idx % 2 == 0 else "Europa"
-                simulated_theme = "INFRAESTRUTURA SUSTENTÁVEL" if idx % 2 == 0 else "INFRA. SUSTENTÁVEL E ECONÔMIA"
-                if continente != "Todo" and simulated_continent != continente:
+            # Lista de temas simulados – todos combinan la frase base "INFRAESTRUCTURA SOSTENIBLE" com a variação
+            simulated_themes = [
+                "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
+                "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
+                "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
+                "INFRAESTRUCTURA SOSTENIBLE, TÉCNICO",
+                "INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL",
+                "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
+                "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"
+            ]
+            # Para cada artículo retornado, atribuímos de forma cíclica um tema simulado
+            for idx, item in enumerate(items, start=0):
+                simulated_theme = simulated_themes[idx % len(simulated_themes)]
+                # Se o filtro não for "Todo", verificamos se o tema selecionado está contido no tema simulado
+                if tema != "Todo" and tema not in simulated_theme:
                     continue
-                if idioma != "Todo" and simulated_language != idioma:
-                    continue
-                if tema != "Todo" and simulated_theme != tema:
-                    continue
-                item["simulated_language"] = simulated_language
-                item["simulated_continent"] = simulated_continent
                 item["simulated_theme"] = simulated_theme
                 displayed_items.append(item)
             
             if not displayed_items:
-                st.warning("Nenhum resultado encontrado com os filtros aplicados.")
+                st.warning("No se encontraron resultados con los filtros aplicados.")
             else:
                 for idx, item in enumerate(displayed_items, start=1):
-                    title = item.get("title", "Sem Título")
-                    pub_date = item.get("publication_date", "Data não disponível")
+                    title = item.get("title", "Sin Título")
+                    pub_date = item.get("publication_date", "Fecha no disponible")
                     authors_data = item.get("authorships", [])
                     authors_list = []
                     for a in authors_data:
                         author_info = a.get("author", {})
-                        author_name = author_info.get("display_name", "Autor Desconhecido")
+                        author_name = author_info.get("display_name", "Autor desconocido")
                         authors_list.append(author_name)
-                    authors_str = ", ".join(authors_list) if authors_list else "Nenhum autor"
+                    authors_str = ", ".join(authors_list) if authors_list else "Ningún autor"
                     
-                    link = item.get("doi") or "[Sem DOI]"
-                    if link == "[Sem DOI]":
+                    link = item.get("doi") or "[Sin DOI]"
+                    if link == "[Sin DOI]":
                         loc = item.get("primary_location", {})
                         link_alt = loc.get("landing_page_url")
                         if link_alt:
@@ -120,16 +117,14 @@ def show_inteligente():
                     abstract_inv = item.get("abstract_inverted_index", {})
                     abstract_text = invert_abstract(abstract_inv)
                     
-                    st.subheader(f"Artigo {idx}: {title}")
-                    st.write(f"**Data de Publicação:** {pub_date}")
+                    st.subheader(f"Artículo {idx}: {title}")
+                    st.write(f"**Fecha de Publicación:** {pub_date}")
                     st.write(f"**Autores:** {authors_str}")
-                    st.write(f"**Idioma:** {item.get('simulated_language')}")
-                    st.write(f"**Continente:** {item.get('simulated_continent')}")
                     st.write(f"**Tema:** {item.get('simulated_theme')}")
-                    st.write(f"**Resumo:** {abstract_text[:300]}{'...' if len(abstract_text) > 300 else ''}")
-                    st.markdown(f"[Link do Artigo]({link})")
+                    st.write(f"**Resumen:** {abstract_text[:300]}{'...' if len(abstract_text) > 300 else ''}")
+                    st.markdown(f"[Enlace del Artículo]({link})")
                     
-    if st.button("volver al menú"):
+    if st.button("Volver al menú"):
         st.session_state.page = "menu"
         if hasattr(st, "experimental_rerun"):
             st.experimental_rerun()
