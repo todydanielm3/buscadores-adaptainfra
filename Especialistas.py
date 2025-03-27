@@ -1,5 +1,11 @@
 import streamlit as st
 import requests
+import base64
+
+def get_base64_image(file_path):
+    """Lê o arquivo de imagem e retorna seu conteúdo codificado em base64."""
+    with open(file_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode()
 
 def buscar_orcid(query, max_results=100):
     """
@@ -63,9 +69,18 @@ def filtrar_dados_simulados(idx: int, filtro_area: str) -> dict:
     return {"area": area_simulada}
 
 def show_especialistas():
-    st.image("logo.png", width=250)
-    st.title("🔎 Repositório de Especialistas")
-    st.write("Pesquise por especialistas com base em sua especialidade e área de atuação.")
+    # Cabeçalho com identidade visual usando a logo convertida em base64
+    logo_base64 = get_base64_image("logo2.png")
+    st.markdown(
+        f"""
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img src="data:image/png;base64,{logo_base64}" width="150">
+            <h1 style="font-family: 'Roboto', sans-serif; color: #333;">Repositório de Especialistas</h1>
+            <p style="font-family: 'Roboto', sans-serif;">Conectando pesquisa e profissionais</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     
     # Campo de busca: Especialidade
     especialidade = st.text_input("Especialidade")

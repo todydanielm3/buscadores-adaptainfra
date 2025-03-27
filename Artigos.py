@@ -1,5 +1,11 @@
 import streamlit as st
 import requests
+import base64
+
+def get_base64_image(file_path):
+    """Lê o arquivo de imagem e retorna seu conteúdo codificado em base64."""
+    with open(file_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode()
 
 def invert_abstract(abstract_inverted_index):
     """Converte resumo (abstract) invertido em texto normal."""
@@ -28,16 +34,25 @@ def search_openalex(query: str, max_results=5):
     except requests.RequestException as e:
         st.error(f"[ERRO] Falha na requisição: {e}")
         return []
-
     data = response.json()
     results = data.get('results', [])
     return results
 
 def show_inteligente():
-    st.image("logo.png", width=250)
-    st.title("Búsqueda inteligente")
-    st.write("Introduzca un término de búsqueda")
+    # Cabeçalho com identidade visual usando a logo convertida em base64
+    logo_base64 = get_base64_image("logo2.png")
+    st.markdown(
+        f"""
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img src="data:image/png;base64,{logo_base64}" width="150">
+            <h1 style="font-family: 'Roboto', sans-serif; color: #333;">Búsqueda inteligente</h1>
+            <p style="font-family: 'Roboto', sans-serif;">Conectando pesquisadores com publicações acadêmicas</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     
+    st.write("Introduzca un término de búsqueda")
     query = st.text_input("Término", value=" ")
     
     st.write("Filtrar por:")
@@ -57,7 +72,6 @@ def show_inteligente():
             "POLÍTICO E GOVERNAMENTAL",
             "REGIÃO AMAZÔNICA",
             "AUDITORIA"
-
         ])
     
     if st.button("Buscar"):
@@ -67,19 +81,17 @@ def show_inteligente():
             st.info(f"Pesquisando por: '{query}' ...")
             items = search_openalex(query, max_results=10)
             displayed_items = []
-            # Simulação dos filtros: atribuímos valores baseados no índice para demonstrar
+            # Simulação dos filtros: valores simulados baseados no índice
             for idx, item in enumerate(items, start=1):
                 simulated_language = "Português" if idx % 2 == 0 else "Inglês"
                 simulated_continent = "América" if idx % 2 == 0 else "Europa"
                 simulated_theme = "INFRAESTRUTURA SUSTENTÁVEL" if idx % 2 == 0 else "INFRA. SUSTENTÁVEL E ECONÔMIA"
-                # Verifica cada filtro: se o filtro não for "Todos", o valor simulado deve ser igual.
                 if continente != "Todos" and simulated_continent != continente:
                     continue
                 if idioma != "Todos" and simulated_language != idioma:
                     continue
                 if tema != "Todos" and simulated_theme != tema:
                     continue
-                # Acrescenta os valores simulados ao item para exibição
                 item["simulated_language"] = simulated_language
                 item["simulated_continent"] = simulated_continent
                 item["simulated_theme"] = simulated_theme
