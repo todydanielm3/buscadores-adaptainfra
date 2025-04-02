@@ -80,7 +80,7 @@ def show_menu():
             st.experimental_rerun()
         else:
             st.stop()
-    if col2.button("Repositorio de expertos", key="especialistas", use_container_width=True):
+    if col2.button("Búsqueda de expertos", key="especialistas", use_container_width=True):
         st.session_state.page = "especialistas"
         if hasattr(st, "experimental_rerun"):
             st.experimental_rerun()
