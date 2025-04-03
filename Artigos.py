@@ -8,7 +8,7 @@ def get_base64_image(file_path):
         return base64.b64encode(image_file.read()).decode()
 
 def invert_abstract(abstract_inverted_index):
-    """Converte resumo (abstract) invertido em texto normal."""
+    """Converte resumen (abstract) invertido en texto normal."""
     if not abstract_inverted_index:
         return "Resumen no disponible."
     word_positions = []
@@ -39,7 +39,6 @@ def search_openalex(query: str, max_results=100):
     return results
 
 def show_inteligente():
-    # Cabeçalho com identidade visual usando a logo convertida para base64
     logo_base64 = get_base64_image("logo2.png")
     st.markdown(
         f"""
@@ -52,29 +51,32 @@ def show_inteligente():
         unsafe_allow_html=True
     )
     
-    st.write("Introduzca un término de búsqueda:")
-    query = st.text_input("Término", value=" ")
+    with st.form(key="search_form_artigos", clear_on_submit=False):
+        query = st.text_input("Término", value=" ")
+        tema = st.selectbox("Tema", [
+            "Todo", 
+            "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
+            "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
+            "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
+            "INFRAESTRUCTURA SOSTENIBLE, TÉCNICO",
+            "INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL",
+            "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
+            "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"
+        ])
+        col1, col2 = st.columns(2)
+        buscar_pressed = col1.form_submit_button("Buscar")
+        volver_pressed = col2.form_submit_button("Volver al menú")
     
-    # Filtro: Tema
-    tema = st.selectbox("Tema", [
-        "Todo", 
-        "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
-        "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
-        "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
-        "INFRAESTRUCTURA SOSTENIBLE, TÉCNICO",
-        "INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL",
-        "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
-        "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"
-    ])
-    
-    if st.button("Buscar"):
+    if volver_pressed:
+        st.session_state.page = "menu"
+        st.query_params.from_dict({"page": "menu"})
+    if buscar_pressed:
         if not query.strip():
             st.warning("Por favor, ingrese un término de búsqueda.")
         else:
             st.info(f"Buscando por: '{query}' y tema: '{tema}' ...")
             items = search_openalex(query, max_results=30)
             displayed_items = []
-            # Lista de temas simulados – todos combinan la frase base "INFRAESTRUCTURA SOSTENIBLE" com a variação
             simulated_themes = [
                 "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
                 "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
@@ -84,15 +86,12 @@ def show_inteligente():
                 "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
                 "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"
             ]
-            # Para cada artículo retornado, atribuímos de forma cíclica um tema simulado
             for idx, item in enumerate(items, start=0):
                 simulated_theme = simulated_themes[idx % len(simulated_themes)]
-                # Se o filtro não for "Todo", verificamos se o tema selecionado está contido no tema simulado
                 if tema != "Todo" and tema not in simulated_theme:
                     continue
                 item["simulated_theme"] = simulated_theme
                 displayed_items.append(item)
-            
             if not displayed_items:
                 st.warning("No se encontraron resultados con los filtros aplicados.")
             else:
@@ -123,10 +122,3 @@ def show_inteligente():
                     st.write(f"**Tema:** {item.get('simulated_theme')}")
                     st.write(f"**Resumen:** {abstract_text[:300]}{'...' if len(abstract_text) > 300 else ''}")
                     st.markdown(f"[Enlace del Artículo]({link})")
-                    
-    if st.button("Volver al menú"):
-        st.session_state.page = "menu"
-        if hasattr(st, "experimental_rerun"):
-            st.experimental_rerun()
-        else:
-            st.stop()

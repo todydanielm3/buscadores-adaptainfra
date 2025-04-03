@@ -36,9 +36,7 @@ def get_base64_image(file_path):
         return base64.b64encode(image_file.read()).decode()
 
 def show_menu():
-    # Converte a logo para base64
     logo_base64 = get_base64_image("logo.png")
-    
     st.markdown(
         f"""
         <style>
@@ -59,9 +57,6 @@ def show_menu():
             font-family: 'Roboto', sans-serif;
             font-weight: normal;
         }}
-        .main-menu p {{
-            font-size: 18px;
-        }}
         </style>
         <div class="main-menu">
             <img src="data:image/png;base64,{logo_base64}" width="200">
@@ -72,23 +67,21 @@ def show_menu():
         unsafe_allow_html=True
     )
     
-    # Botões dispostos em duas colunas
     col1, col2 = st.columns(2)
     if col1.button("Búsqueda inteligente", key="inteligente", use_container_width=True):
         st.session_state.page = "inteligente"
-        if hasattr(st, "experimental_rerun"):
-            st.experimental_rerun()
-        else:
-            st.stop()
+        st.query_params.from_dict({"page": "inteligente"})
     if col2.button("Búsqueda de expertos", key="especialistas", use_container_width=True):
         st.session_state.page = "especialistas"
-        if hasattr(st, "experimental_rerun"):
-            st.experimental_rerun()
-        else:
-            st.stop()
+        st.query_params.from_dict({"page": "especialistas"})
     
     st.markdown("<div style='padding-top: 50px;'></div>", unsafe_allow_html=True)
     st.caption("© 2025 AdaptaInfra – GIZ | Desarrollado por Daniel Moraes")
+
+# Atualiza o estado com base nos query params
+query_params = st.query_params
+if "page" in query_params:
+    st.session_state.page = query_params["page"]
 
 if st.session_state.page == "menu":
     show_menu()

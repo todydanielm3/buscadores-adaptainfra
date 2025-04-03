@@ -3,13 +3,13 @@ import requests
 import base64
 
 def get_base64_image(file_path):
-    """Lê o arquivo de imagem e retorna seu conteúdo codificado em base64."""
+    """Lê el archivo de imagen y retorna su contenido codificado en base64."""
     with open(file_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
 
 def buscar_orcid(query, max_results=30):
     """
-    Consulta a API pública da ORCID por pesquisadores utilizando o termo de especialidad.
+    Consulta la API pública de ORCID por investigadores utilizando el término de especialidad.
     """
     base_url = "https://pub.orcid.org/v3.0/search/?q=" + query
     headers = {'Accept': 'application/json'}
@@ -34,7 +34,6 @@ def obter_detalhes_orcid(orcid_id: str) -> dict:
         response.raise_for_status()
         summary = response.json() or {}
         
-        # Extracción del nombre del especialista
         name_info = summary.get('name') or {}
         credit_name = name_info.get("credit-name") or {}
         if credit_name.get("value"):
@@ -44,19 +43,18 @@ def obter_detalhes_orcid(orcid_id: str) -> dict:
             family = (name_info.get("family-name") or {}).get("value", "")
             person_name = f"{given} {family}".strip() if (given or family) else "Nombre no disponible"
         
-        bio = (summary.get('biography') or {}).get('content', 'Bio no disponible.')
+        bio = (summary.get('biography') or {}).get('content', "Bio no disponible.")
         affiliations = summary.get('employments', {}).get('employment-summary', [])
         institution = (
             affiliations[0].get('organization', {}).get('name')
             if affiliations and affiliations[0].get('organization', {}).get('name')
-            else 'Institución no informada'
+            else "Institución no informada"
         )
         return {"name": person_name, "bio": bio, "institution": institution}
     except requests.RequestException:
         return {"name": "Nombre no disponible", "bio": "Bio no disponible.", "institution": "Institución no informada"}
 
 def show_especialistas():
-    # Encabezado con identidad visual usando la logo convertida a base64
     logo_base64 = get_base64_image("logo2.png")
     st.markdown(
         f"""
@@ -69,10 +67,17 @@ def show_especialistas():
         unsafe_allow_html=True
     )
     
-    # Campo de búsqueda: Especialidad
-    especialidad = st.text_input("Especialidad", placeholder="Ingrese la especialidad...")
+    with st.form(key="search_form_especialistas", clear_on_submit=False):
+        especialidad = st.text_input("Especialidad", placeholder="Ingrese la especialidad...")
+        col1, col2 = st.columns(2)
+        buscar_pressed = col1.form_submit_button("Buscar")
+        volver_pressed = col2.form_submit_button("Volver al menú")
     
-    if st.button("Buscar"):
+    if volver_pressed:
+        st.session_state.page = "menu"
+        st.query_params.from_dict({"page": "menu"})
+    
+    if buscar_pressed:
         if not especialidad.strip():
             st.warning("Por favor, ingrese una especialidad.")
         else:
@@ -87,7 +92,6 @@ def show_especialistas():
                     orcid_id = orcid_info.get('path', 'N/A')
                     profile_url = f"https://orcid.org/{orcid_id}"
                     
-                    # Obtener datos reales del especialista
                     detalles = obter_detalhes_orcid(orcid_id)
                     name = detalles.get("name", f"Especialista {idx}")
                     bio = detalles.get("bio")
@@ -104,10 +108,7 @@ def show_especialistas():
                             bio_text = bio if len(bio) <= 250 else bio[:250] + "..."
                             st.markdown(f"📝 {bio_text}")
                         st.markdown("---")
-                        
-    if st.button("Volver al menú"):
+    
+    if st.button("Volver al menú", key="volver"):
         st.session_state.page = "menu"
-        if hasattr(st, "experimental_rerun"):
-            st.experimental_rerun()
-        else:
-            st.stop()
+        st.query_params.from_dict({"page": "menu"})
