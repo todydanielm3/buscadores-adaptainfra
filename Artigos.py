@@ -39,6 +39,7 @@ def search_openalex(query: str, max_results=100):
     return results
 
 def show_inteligente():
+    # Cabeçalho com identidade visual
     logo_base64 = get_base64_image("logo2.png")
     st.markdown(
         f"""
@@ -51,10 +52,11 @@ def show_inteligente():
         unsafe_allow_html=True
     )
     
+    # Formulário para iniciar la búsqueda
     with st.form(key="search_form_artigos", clear_on_submit=False):
         query = st.text_input("Término", value=" ")
         tema = st.selectbox("Tema", [
-            "Todo", 
+            "Sin", 
             "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
             "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
             "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
@@ -67,35 +69,33 @@ def show_inteligente():
         buscar_pressed = col1.form_submit_button("Buscar")
         volver_pressed = col2.form_submit_button("Volver al menú")
     
+    # Botão "Volver al menú"
     if volver_pressed:
         st.session_state.page = "menu"
         st.query_params.from_dict({"page": "menu"})
+        # Tenta rerrodar o script imediatamente
+        try:
+            st.experimental_rerun()
+        except:
+            st.stop()
+    
+    # Botão "Buscar"
     if buscar_pressed:
         if not query.strip():
             st.warning("Por favor, ingrese un término de búsqueda.")
         else:
-            st.info(f"Buscando por: '{query}' y tema: '{tema}' ...")
-            items = search_openalex(query, max_results=30)
-            displayed_items = []
-            simulated_themes = [
-                "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
-                "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
-                "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
-                "INFRAESTRUCTURA SOSTENIBLE, TÉCNICO",
-                "INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL",
-                "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
-                "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"
-            ]
-            for idx, item in enumerate(items, start=0):
-                simulated_theme = simulated_themes[idx % len(simulated_themes)]
-                if tema != "Todo" and tema not in simulated_theme:
-                    continue
-                item["simulated_theme"] = simulated_theme
-                displayed_items.append(item)
-            if not displayed_items:
-                st.warning("No se encontraron resultados con los filtros aplicados.")
+            # Concatena o termo com o tema se o tema escolhido for diferente de "Sin"
+            if tema != "Sin":
+                query_final = query.strip() + " " + tema
             else:
-                for idx, item in enumerate(displayed_items, start=1):
+                query_final = query.strip()
+            
+            st.info(f"Buscando por: '{query_final}' ...")
+            items = search_openalex(query_final, max_results=30)
+            if not items:
+                st.warning("No se encontraron resultados.")
+            else:
+                for idx, item in enumerate(items, start=1):
                     title = item.get("title", "Sin Título")
                     pub_date = item.get("publication_date", "Fecha no disponible")
                     authors_data = item.get("authorships", [])
@@ -109,7 +109,7 @@ def show_inteligente():
                     link = item.get("doi") or "[Sin DOI]"
                     if link == "[Sin DOI]":
                         loc = item.get("primary_location", {})
-                        link_alt = loc.get("landing_page_url")
+                        link_alt = loc.get("landing_page_url") if loc else None
                         if link_alt:
                             link = link_alt
                     
@@ -119,6 +119,6 @@ def show_inteligente():
                     st.subheader(f"Artículo {idx}: {title}")
                     st.write(f"**Fecha de Publicación:** {pub_date}")
                     st.write(f"**Autores:** {authors_str}")
-                    st.write(f"**Tema:** {item.get('simulated_theme')}")
+                    st.write(f"**Tema:** {tema if tema != 'Sin' else 'Sin tema'}")
                     st.write(f"**Resumen:** {abstract_text[:300]}{'...' if len(abstract_text) > 300 else ''}")
                     st.markdown(f"[Enlace del Artículo]({link})")
