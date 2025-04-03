@@ -76,7 +76,8 @@ def show_inteligente():
     if volver_pressed:
         st.session_state.page = "menu"
         st.query_params.from_dict({"page": "menu"})
-        st.experimental_rerun()
+        #st.stop()
+        #st.experimental_rerun()
     
     if buscar_pressed:
         if not query.strip():
