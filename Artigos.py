@@ -3,12 +3,10 @@ import requests
 import base64
 
 def get_base64_image(file_path):
-    """Lê o arquivo de imagem e retorna seu conteúdo codificado em base64."""
     with open(file_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
 
 def invert_abstract(abstract_inverted_index):
-    """Converte resumen (abstract) invertido en texto normal."""
     if not abstract_inverted_index:
         return "Resumen no disponible."
     word_positions = []
@@ -19,9 +17,6 @@ def invert_abstract(abstract_inverted_index):
     return " ".join(wp[1] for wp in word_positions)
 
 def search_openalex(query: str, max_results=100):
-    """
-    Realiza la búsqueda en OpenAlex y retorna una lista de diccionarios con metadatos.
-    """
     base_url = "https://api.openalex.org/works"
     params = {
         'search': query,
@@ -38,8 +33,18 @@ def search_openalex(query: str, max_results=100):
     results = data.get('results', [])
     return results
 
+# Mapeamento de temas do espanhol para o português
+theme_translation = {
+    'INFRAESTRUCTURA SOSTENIBLE, SOCIAL': 'infraestrutura sustentável, social',
+    'INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO': 'infraestrutura sustentável, econômico',
+    'INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL': 'infraestrutura sustentável, ambiental',
+    'INFRAESTRUCTURA SOSTENIBLE, TÉCNICO': 'infraestrutura sustentável, técnico',
+    'INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL': 'infraestrutura sustentável, político e governamental',
+    'INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA': 'infraestrutura sustentável, região amazônica',
+    'INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA': 'infraestrutura sustentável, auditoria'
+}
+
 def show_inteligente():
-    # Cabeçalho com identidade visual
     logo_base64 = get_base64_image("logo2.png")
     st.markdown(
         f"""
@@ -52,7 +57,6 @@ def show_inteligente():
         unsafe_allow_html=True
     )
     
-    # Formulário para iniciar la búsqueda
     with st.form(key="search_form_artigos", clear_on_submit=False):
         query = st.text_input("Término", value=" ")
         tema = st.selectbox("Tema", [
@@ -69,27 +73,21 @@ def show_inteligente():
         buscar_pressed = col1.form_submit_button("Buscar")
         volver_pressed = col2.form_submit_button("Volver al menú")
     
-    # Botão "Volver al menú"
     if volver_pressed:
         st.session_state.page = "menu"
         st.query_params.from_dict({"page": "menu"})
-        # Tenta rerrodar o script imediatamente
-        try:
-            st.experimental_rerun()
-        except:
-            st.stop()
+        st.experimental_rerun()
     
-    # Botão "Buscar"
     if buscar_pressed:
         if not query.strip():
             st.warning("Por favor, ingrese un término de búsqueda.")
         else:
-            # Concatena o termo com o tema se o tema escolhido for diferente de "Sin"
+            # Concatena o termo com o tema traduzido, se for diferente de "Sin"
             if tema != "Sin":
-                query_final = query.strip() + " " + tema
+                tema_pt = theme_translation.get(tema, tema)
+                query_final = query.strip() + " " + tema_pt
             else:
                 query_final = query.strip()
-            
             st.info(f"Buscando por: '{query_final}' ...")
             items = search_openalex(query_final, max_results=30)
             if not items:
