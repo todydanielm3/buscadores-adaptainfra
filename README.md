@@ -1,5 +1,7 @@
 # Buscadores AdaptaInfra
 
+<img width="908" alt="image" src="https://github.com/user-attachments/assets/871f5499-9f97-4ac9-b84a-0adcb55a75a5" />
+
 Este projeto é uma aplicação desenvolvida com Streamlit que integra dois buscadores:
 
 - **Buscador Inteligente**: Pesquisa artigos e publicações acadêmicas usando a API OpenAlex.
