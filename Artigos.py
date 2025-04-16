@@ -107,7 +107,7 @@ def show_artigos():
     
     if volver_pressed:
         st.session_state.page = "menu"
-        st.query_params.from_dict({"page": "menu"})
+        st.query_params.update({"page": "menu"})
         st.stop()
     
     if buscar_pressed:

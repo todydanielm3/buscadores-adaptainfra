@@ -77,7 +77,7 @@ def show_especialistas():
     
     if volver_pressed:
         st.session_state.page = "menu"
-        st.query_params.from_dict({"page": "menu"})
+        st.query_params.update({"page": "menu"})
         st.stop()
     
     if buscar_pressed:
@@ -131,5 +131,5 @@ def show_especialistas():
     # Botón extra para volver, se necessário
     if st.button("Volver al menú", key="volver_extra_ex"):
         st.session_state.page = "menu"
-        st.query_params.from_dict({"page": "menu"})
+        st.query_params.update({"page": "menu"})
         st.stop()

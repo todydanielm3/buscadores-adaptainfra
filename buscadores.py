@@ -68,10 +68,10 @@ def show_menu():
     col1, col2 = st.columns(2)
     if col1.button("Búsqueda de artículos y publicaciones", key="menu_inteligente", use_container_width=True):
         st.session_state.page = "inteligente"
-        st.query_params.from_dict({"page": "inteligente"})
+        st.query_params.update({"page": "inteligente"})
     if col2.button("Buscador de personas expertas", key="menu_especialistas", use_container_width=True):
         st.session_state.page = "especialistas"
-        st.query_params.from_dict({"page": "especialistas"})
+        st.query_params.update({"page": "especialistas"})
     
 
 query_params = st.query_params
