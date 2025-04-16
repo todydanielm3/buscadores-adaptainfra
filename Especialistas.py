@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import base64
+from db import add_search_history, add_feedback
 
 def get_base64_image(file_path):
     """Lê el archivo de imagen y retorna su contenido codificado en base64."""
@@ -67,6 +68,7 @@ def show_especialistas():
         unsafe_allow_html=True
     )
     
+    # Formulário para búsqueda
     with st.form(key="search_form_especialistas", clear_on_submit=False):
         especialidad = st.text_input("Especialidad", placeholder="Ingrese la especialidad...")
         col1, col2 = st.columns(2)
@@ -76,13 +78,15 @@ def show_especialistas():
     if volver_pressed:
         st.session_state.page = "menu"
         st.query_params.from_dict({"page": "menu"})
+        st.stop()
     
     if buscar_pressed:
         if not especialidad.strip():
             st.warning("Por favor, ingrese una especialidad.")
         else:
-            st.info(f"Buscando especialistas con publicaciones relacionadas a: '{especialidad}' ...")
-            resultados = buscar_orcid(especialidad)
+            st.info(f"Buscando especialistas con publicaciones relacionadas a: '{especialidad.strip()}' ...")
+            add_search_history(especialidad.strip(), context="Especialistas")
+            resultados = buscar_orcid(especialidad.strip())
             if not resultados:
                 st.warning("No se encontraron especialistas.")
             else:
@@ -109,6 +113,23 @@ def show_especialistas():
                             st.markdown(f"📝 {bio_text}")
                         st.markdown("---")
     
-    if st.button("Volver al menú", key="volver"):
+    # Exibir histórico de búsqueda
+    st.markdown("---")
+    st.subheader("Histórico de Búsqueda")
+    if "search_history_ex" in st.session_state:
+        for i, h in enumerate(st.session_state.search_history_ex, start=1):
+            st.write(f"{i}. {h}")
+    
+    # Formulário de Feedback
+    with st.form(key="feedback_form_especialistas"):
+        feedback = st.text_area("Deja tu feedback sobre la búsqueda", placeholder="Escribe tus comentarios...")
+        enviar_feedback = st.form_submit_button("Enviar Feedback")
+        if enviar_feedback:
+            add_feedback(feedback, context="Especialistas")
+            st.success("¡Gracias por tu feedback!")
+    
+    # Botón extra para volver, se necessário
+    if st.button("Volver al menú", key="volver_extra_ex"):
         st.session_state.page = "menu"
         st.query_params.from_dict({"page": "menu"})
+        st.stop()

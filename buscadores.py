@@ -1,15 +1,15 @@
 import streamlit as st
-st.set_page_config(page_title="Plataforma AdaptaInfra", layout="centered")
-
 import base64
 from Artigos import show_inteligente
 from Especialistas import show_especialistas
+from Chatbot import show_chatbot  # Importa a função do Chatbot
+
+st.set_page_config(page_title="Plataforma AdaptaInfra", layout="centered")
 
 if 'page' not in st.session_state:
     st.session_state.page = "menu"
 
 def load_font_base64(file_path):
-    """Lê o arquivo da fonte e retorna seu conteúdo em base64."""
     with open(file_path, "rb") as font_file:
         return base64.b64encode(font_file.read()).decode()
 
@@ -31,7 +31,6 @@ body {{
 st.markdown(css_font, unsafe_allow_html=True)
 
 def get_base64_image(file_path):
-    """Retorna o conteúdo base64 da imagem."""
     with open(file_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
 
@@ -43,8 +42,7 @@ def show_menu():
         .main-menu {{
             text-align: center;
             padding-top: 100px;
-            background: linear-gradient(135deg, #008000, #800080, #0000FF, #FF0000);
-            color: white;
+            color: black;
             padding: 50px;
             border-radius: 10px;
             margin-bottom: 30px;
@@ -59,8 +57,8 @@ def show_menu():
         }}
         </style>
         <div class="main-menu">
-            <img src="data:image/png;base64,{logo_base64}" width="200">
-            <h2>Plataforma AdaptaInfra</h2>
+            <img src="data:image/png;base64,{logo_base64}" width="500">
+            <h2>Buscador Inteligente</h2>
             <h6>Conectando Investigación y Especialistas</h6>
         </div>
         """,
@@ -68,17 +66,14 @@ def show_menu():
     )
     
     col1, col2 = st.columns(2)
-    if col1.button("Búsqueda inteligente", key="inteligente", use_container_width=True):
+    if col1.button("Búsqueda de artículos y publicaciones", key="menu_inteligente", use_container_width=True):
         st.session_state.page = "inteligente"
         st.query_params.from_dict({"page": "inteligente"})
-    if col2.button("Búsqueda de expertos", key="especialistas", use_container_width=True):
+    if col2.button("Buscador de personas expertas", key="menu_especialistas", use_container_width=True):
         st.session_state.page = "especialistas"
         st.query_params.from_dict({"page": "especialistas"})
     
-    st.markdown("<div style='padding-top: 50px;'></div>", unsafe_allow_html=True)
-    st.caption("© 2025 AdaptaInfra – GIZ | Desarrollado por Daniel Moraes")
 
-# Atualiza o estado com base nos query params
 query_params = st.query_params
 if "page" in query_params:
     st.session_state.page = query_params["page"]
@@ -89,3 +84,9 @@ elif st.session_state.page == "inteligente":
     show_inteligente()
 elif st.session_state.page == "especialistas":
     show_especialistas()
+
+# Exibe o chatbot flutuante (definido em Chatbot.py)
+show_chatbot()
+
+st.markdown("<div style='padding-top: 50px;'></div>", unsafe_allow_html=True)
+st.caption("© 2025 AdaptaInfra – GIZ | Desarrollado por Daniel Moraes")
