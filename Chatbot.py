@@ -1,32 +1,33 @@
+  # Chatbot.py  – trecho de configuração da chave
+# Chatbot.py  – cabeçalho
 import os
 import base64
-from pathlib import Path
-
-from dotenv import load_dotenv          # pip install python-dotenv
 import streamlit as st
-from streamlit.errors import StreamlitSecretNotFoundError
 import google.generativeai as genai
+from dotenv import load_dotenv          # python‑dotenv
+from pathlib import Path                #  ← ADICIONE ESTA LINHA
 
-# ───── 1)  Carrega variáveis do .env (útil em desenvolvimento local) ─────
 load_dotenv()
 
-# ───── 2)  Lê a chave primeiro em st.secrets, depois nas variáveis de ambiente ──
+# ──────────────────────────────────────────────────────────────
+# 1. tenta ler em st.secrets   • deploy/Streamlit Cloud
+# 2. se falhar, usa os.getenv  • ambiente local (.env ou export)
+# ──────────────────────────────────────────────────────────────
 try:
-    API_KEY = st.secrets["GOOGLE_API_KEY"]          # só existe no deploy
-except (StreamlitSecretNotFoundError, KeyError):
-    API_KEY = os.getenv("GOOGLE_API_KEY")           # fallback local
-    # ➜ se também não existir, API_KEY será None
+    API_KEY = st.secrets["GOOGLE_API_KEY"]
+except Exception:                  # pega qualquer erro de secrets
+    API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not API_KEY:
     st.error(
-        "Chave da API do Gemini não encontrada. "
-        "• Localmente: coloque GOOGLE_API_KEY no seu .env\n"
-        "• No Streamlit Cloud: adicione em Settings ▸ Secrets"
+        "Chave da API do Gemini não encontrada.\n"
+        "• No Streamlit Cloud: Settings ▸ Secrets ▸ GOOGLE_API_KEY\n"
+        "• Localmente: crie .env ou export GOOGLE_API_KEY=…"
     )
     st.stop()
 
-genai.configure(api_key=API_KEY, transport="rest")  # REST evita timeouts gRPC
-
+# usa REST (+tolerante a time‑outs)  
+genai.configure(api_key=API_KEY, transport="rest")
 # ───── resto do Chatbot.py permanece igual ─────
 
 # ─────────────────────── Utilitários ────────────────────────
