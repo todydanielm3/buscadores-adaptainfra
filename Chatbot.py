@@ -67,7 +67,7 @@ def show_chatbot() -> None:
         <div class="chatbot-container">
           <div class="chatbot-header" onclick="toggleChatbot()">
             <img src="data:image/png;base64,{mini_logo_b64}" alt="Logo VerichIA">
-            Assistente Virtual&nbsp;–&nbsp;VerichIA
+            Asistente Virtual&nbsp;–&nbsp;VerichIA
           </div>
           <div class="chatbot-content" id="chatbot-content">
             <div id="streamlit-chat-block"></div>
