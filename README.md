@@ -24,7 +24,7 @@ Conecta pesquisadores às publicações mais relevantes e a especialistas da ár
 
 ⚙️ Instalação
 
-git clone https://github.com/<seu‑usuario>/buscador-inteligente.git
+Clone este repositório.
 cd buscador-inteligente
 
 python -m venv venv
