@@ -1,21 +1,17 @@
-  # Chatbot.py  – trecho de configuração da chave
-# Chatbot.py  – cabeçalho
+# Chatbot.py  – Cabeçalho / configuração
 import os
 import base64
+from pathlib import Path
 import streamlit as st
 import google.generativeai as genai
-from dotenv import load_dotenv          # python‑dotenv
-from pathlib import Path                #  ← ADICIONE ESTA LINHA
+from dotenv import load_dotenv                              # python‑dotenv
 
-load_dotenv()
+# ─────────── Chave de API ────────────────────────────────────────────────
+load_dotenv()                                               # (.env local)
 
-# ──────────────────────────────────────────────────────────────
-# 1. tenta ler em st.secrets   • deploy/Streamlit Cloud
-# 2. se falhar, usa os.getenv  • ambiente local (.env ou export)
-# ──────────────────────────────────────────────────────────────
-try:
+try:                                                        # deploy
     API_KEY = st.secrets["GOOGLE_API_KEY"]
-except Exception:                  # pega qualquer erro de secrets
+except Exception:                                           # local
     API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not API_KEY:
@@ -26,26 +22,24 @@ if not API_KEY:
     )
     st.stop()
 
-# usa REST (+tolerante a time‑outs)  
+# Usa REST (mais tolerante a time‑outs que gRPC)
 genai.configure(api_key=API_KEY, transport="rest")
-# ───── resto do Chatbot.py permanece igual ─────
 
-# ─────────────────────── Utilitários ────────────────────────
+# ─────────── Utilitários ────────────────────────────────────────────────
 ASSETS_DIR = Path(__file__).parent
-IMG_PATH = ASSETS_DIR / "VerichIA.png"
+IMG_PATH    = ASSETS_DIR / "VerichIA.png"
 
 
 def get_base64_image(file_path: Path | str) -> str:
-    """Codifica uma imagem em base64 para embutir no HTML."""
     with open(file_path, "rb") as img:
         return base64.b64encode(img.read()).decode()
 
 
-# ───────────────────── Função principal ─────────────────────
+# ─────────── Função principal ───────────────────────────────────────────
 def show_chatbot() -> None:
     mini_logo_b64 = get_base64_image(IMG_PATH)
 
-    # Cabeçalho + container HTML/CSS
+    # Cabeçalho + container HTML/CSS (mesmo de antes)
     st.markdown(
         f"""
         <style>
@@ -83,7 +77,8 @@ def show_chatbot() -> None:
         <script>
           function toggleChatbot(){{
             const c = document.getElementById("chatbot-content");
-            c.style.display = (c.style.display === "none" || c.style.display === "") ? "block" : "none";
+            c.style.display = (c.style.display === "none" || c.style.display === "")
+                              ? "block" : "none";
           }}
         </script>
         """,
@@ -100,8 +95,16 @@ def show_chatbot() -> None:
             unsafe_allow_html=True,
         )
 
-        prompt = st.text_area("Mensagem para VerichIA:")
-        if st.button("Gerar resposta", use_container_width=True):
+        # ───── Entrada do usuário: Enter envia automático ─────
+        user_prompt = st.chat_input("Mensaje a VerichIA:")
+        send_clicked = st.button("Generar respuesta", use_container_width=True)
+
+        # Decide se enviou (Enter ou botão)
+        if (user_prompt and user_prompt.strip()) or send_clicked:
+            prompt_text = user_prompt if user_prompt else ""   # botão = usa último valor
+            if not prompt_text.strip():
+                st.warning("Escreva uma mensagem primeiro.")
+                st.stop()
 
             # cria o modelo só uma vez
             if "gemini_flash" not in st.session_state:
@@ -113,7 +116,7 @@ def show_chatbot() -> None:
             with st.spinner("VerichIA está pensando..."):
                 try:
                     resposta = model.generate_content(
-                        prompt,
+                        prompt_text,
                         request_options={"timeout": 120},
                     )
                     st.subheader("VerichIA:")
@@ -125,7 +128,7 @@ def show_chatbot() -> None:
                     )
 
 
-# Executa localmente para teste isolado
+# ─────────── Execução isolada para testes locais ───────────────────────
 if __name__ == "__main__":
     st.set_page_config(page_title="Chatbot VerichIA", layout="centered")
     show_chatbot()
