@@ -56,7 +56,7 @@ def obter_detalhes_orcid(orcid_id: str) -> dict:
         return {"name": "Nombre no disponible", "bio": "Bio no disponible.", "institution": "Institución no informada"}
 
 def show_especialistas():
-    logo_base64 = get_base64_image("logo2.png")
+    logo_base64 = get_base64_image("logo.png")
     st.markdown(
         f"""
         <div style="text-align: center; margin-bottom: 30px;">

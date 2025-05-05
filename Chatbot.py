@@ -67,7 +67,7 @@ def show_chatbot() -> None:
         <div class="chatbot-container">
           <div class="chatbot-header" onclick="toggleChatbot()">
             <img src="data:image/png;base64,{mini_logo_b64}" alt="Logo VerichIA">
-            Asistente Virtual&nbsp;–&nbsp;VerichIA
+            Asistente Virtual&nbsp;–&nbsp;AI
           </div>
           <div class="chatbot-content" id="chatbot-content">
             <div id="streamlit-chat-block"></div>
@@ -119,7 +119,7 @@ def show_chatbot() -> None:
                         prompt_text,
                         request_options={"timeout": 120},
                     )
-                    st.subheader("VerichIA:")
+                    st.subheader("AI:")
                     st.write(resposta.text)
                 except Exception as e:
                     st.error(
@@ -130,5 +130,5 @@ def show_chatbot() -> None:
 
 # ─────────── Execução isolada para testes locais ───────────────────────
 if __name__ == "__main__":
-    st.set_page_config(page_title="Chatbot VerichIA", layout="centered")
+    st.set_page_config(page_title="Chatbot AI", layout="centered")
     show_chatbot()

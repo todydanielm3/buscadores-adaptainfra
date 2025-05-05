@@ -76,7 +76,7 @@ def parse_openalex_item(item):
 
 def show_artigos():
     # Cabeçalho e identidade visual
-    logo_base64 = get_base64_image("logo2.png")
+    logo_base64 = get_base64_image("logo.png")
     st.markdown(
         f"""
         <div style="text-align: center; margin-bottom: 30px;">

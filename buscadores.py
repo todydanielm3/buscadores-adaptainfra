@@ -57,7 +57,7 @@ def show_menu():
         }}
         </style>
         <div class="main-menu">
-            <img src="data:image/png;base64,{logo_base64}" width="500">
+            <img src="data:image/png;base64,{logo_base64}" width="100">
             <h2>Buscador Inteligente</h2>
             <h6>Conectando Investigación y Especialistas</h6>
         </div>
@@ -89,4 +89,5 @@ elif st.session_state.page == "especialistas":
 show_chatbot()
 
 st.markdown("<div style='padding-top: 50px;'></div>", unsafe_allow_html=True)
-st.caption("© 2025 AdaptaInfra – GIZ | Desarrollado por Daniel Moraes")
+#st.caption("© 2025 AdaptaInfra – GIZ | Desarrollado por Daniel Moraes")
+st.caption("© 2025 Desarrollado por Daniel Moraes")
