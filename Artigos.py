@@ -1,224 +1,210 @@
-import streamlit as st
-import requests
+# Artigos.py
+# ────────────────────────────────────────────────────────────────────
+
 import base64
-import pandas as pd
+import collections
+import requests
+from typing import List, Dict, Any, Optional
+
 import altair as alt
-from collections import Counter
+import pandas as pd
+import streamlit as st
 
-def get_base64_image(file_path):
-    """Lê o arquivo de imagem e retorna seu conteúdo codificado em base64."""
-    with open(file_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode()
+# local imports (make sure these two files live alongside this one)
+from olacefs_api import OlacefsAPIError, search_items
+from biblioteca_api import search_biblioteca, parse_biblioteca_item
 
-def invert_abstract(abstract_inverted_index):
-    """Converte el resumen invertido en texto normal."""
-    if not abstract_inverted_index:
+# ═════════════════════════════════ utilitários comuns ═════════════════
+
+def get_base64_image(path: str) -> str:
+    """Load an image file and return base64‐encoded string."""
+    with open(path, "rb") as img:
+        return base64.b64encode(img.read()).decode()
+
+def invert_abstract(index: Optional[Dict[str, List[int]]]) -> str:
+    """Convert OpenAlex abstract_inverted_index into plain text."""
+    if not index:
         return "Resumen no disponible."
-    word_positions = []
-    for word, positions in abstract_inverted_index.items():
-        for pos in positions:
-            word_positions.append((pos, word))
+    word_positions: List[tuple[int,str]] = []
+    for word, poss in index.items():
+        for p in poss:
+            word_positions.append((p, word))
     word_positions.sort(key=lambda x: x[0])
-    return " ".join(wp[1] for wp in word_positions)
+    return " ".join(w for _, w in word_positions)
 
-def search_openalex(query: str, max_results=200):
-    """
-    Realiza una búsqueda en OpenAlex y retorna una lista de diccionarios con metadatos.
-    """
-    base_url = "https://api.openalex.org/works"
-    params = {
-        'search': query,
-        'per-page': max_results,
-        'sort': 'publication_date:desc'
-    }
+
+# ═══════════════════════════════ OpenAlex helpers ═══════════════════
+
+def search_openalex(q: str, max_results: int = 200) -> List[Dict[str, Any]]:
+    url = "https://api.openalex.org/works"
+    params = {"search": q, "per-page": max_results, "sort": "publication_date:desc"}
     try:
-        response = requests.get(base_url, params=params, timeout=15)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        st.error(f"[ERROR] Falló la solicitud: {e}")
+        r = requests.get(url, params=params, timeout=15)
+        r.raise_for_status()
+        return r.json().get("results", [])
+    except requests.RequestException as exc:
+        st.error(f"[OpenAlex] Falha na requisição: {exc}")
         return []
-    data = response.json()
-    results = data.get('results', [])
-    return results
 
-def parse_openalex_item(item):
-    """
-    Extrae información relevante de cada registro:
-    - Año (publication_date -> extrae el año)
-    - Tópicos (concepts: lista de 'display_name')
-    - Instituciones (extraídas de los datos de 'authorships')
-    - Tipo de obra (campo 'type')
-    """
-    pub_date = item.get("publication_date", "")
-    year = pub_date.split("-")[0] if pub_date else "Desconocido"
-    
-    # Extraer tópicos
-    concepts_info = item.get("concepts", [])
-    topics = [c.get("display_name", "Desconocido") for c in concepts_info]
-    
-    # Extraer instituciones de los autores (evitar duplicados)
-    institutions = set()
-    for author in item.get("authorships", []):
-        for inst in author.get("institutions", []):
-            name = inst.get("display_name")
-            if name:
-                institutions.add(name)
-    
-    # Tipo de obra
-    work_type = item.get("type", "Desconocido")
-    
+def parse_openalex(item: Dict[str, Any]) -> Dict[str, Any]:
+    title = item.get("title", "Sin título")
+    date = item.get("publication_date", "")
+    year = date.split("-")[0] if date else "desconocido"
+    topics = [c.get("display_name","") for c in item.get("concepts",[])]
+    insts = {
+        inst.get("display_name")
+        for a in item.get("authorships",[])
+        for inst in a.get("institutions",[])
+        if inst.get("display_name")
+    }
+    abstract = invert_abstract(item.get("abstract_inverted_index"))
+    url = item.get("doi") or item.get("primary_location",{}).get("landing_page_url","")
     return {
+        "title": title,
+        "date": date,
         "year": year,
         "topics": topics,
-        "institutions": list(institutions),
-        "type": work_type
+        "institutions": list(insts),
+        "type": item.get("type","desconocido"),
+        "abstract": abstract,
+        "url": url or "#",
     }
 
-def show_artigos():
-    # Cabeçalho e identidade visual
-    logo_base64 = get_base64_image("logo.png")
+
+# ══════════════════════════════ OLACEFS Datos helpers ═════════════════════
+def parse_olacefs(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize CKAN resource/package into our schema."""
+    meta = item["metadata"]
+    dt = meta.get("date") or meta.get("created") or ""
+    year = dt[:4] if dt else "desconocido"
+    return {
+        "title": meta.get("title","Sin título"),
+        "date": dt,
+        "year": year,
+        "topics": [],
+        "institutions": [meta.get("organization")] if meta.get("organization") else [],
+        "type": meta.get("format","desconocido"),
+        "abstract": meta.get("description",""),
+        "url": meta.get("url","#"),
+    }
+
+
+# ══════════════════════════════ Main interface ════════════════════════
+
+def show_artigos() -> None:
+    # header
+    logo64 = get_base64_image("logo.png")
     st.markdown(
         f"""
-        <div style="text-align: center; margin-bottom: 30px;">
-            <img src="data:image/png;base64,{logo_base64}" width="150">
-            <h1 style="font-family: 'Roboto', sans-serif; color: #333;">Búsqueda inteligente</h1>
-            <p style="font-family: 'Roboto', sans-serif;">Conectando investigadores con publicaciones académicas</p>
+        <div style="text-align:center;margin-bottom:30px">
+          <img src="data:image/png;base64,{logo64}" width="150">
+          <h1 style="font-family:Roboto,sans-serif;color:#333">Búsqueda inteligente</h1>
+          <p style="font-family:Roboto,sans-serif">Conectando investigadores con publicaciones académicas</p>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-    
-    # Formulário de búsqueda
-    with st.form(key="search_form_artigos", clear_on_submit=False):
-        query = st.text_input("Término", value=" ")
-        tema = st.selectbox("Tema", [
-            "Sin", 
-            "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
-            "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
-            "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
-            "INFRAESTRUCTURA SOSTENIBLE, TÉCNICO",
-            "INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL",
-            "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
-            "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"
-        ])
-        col1, col2 = st.columns(2)
-        buscar_pressed = col1.form_submit_button("Buscar")
-        volver_pressed = col2.form_submit_button("Volver al menú")
-    
-    if volver_pressed:
+
+    # form
+    with st.form("search_form_artigos", clear_on_submit=False):
+        query = st.text_input("Término")
+        tema = st.selectbox(
+            "Tema",
+            ["Sin",
+             "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
+             "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
+             "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
+             "INFRAESTRUCTURA SOSTENIBLE, TÉCNICO",
+             "INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL",
+             "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
+             "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"]
+        )
+        fonte = st.radio("Fuente de datos", ["OpenAlex", "OLACEFS Biblioteca"], horizontal=True)
+        c1, c2 = st.columns(2)
+        buscar = c1.form_submit_button("Buscar")
+        voltar = c2.form_submit_button("Volver al menú")
+
+    if voltar:
         st.session_state.page = "menu"
-        st.query_params.update({"page": "menu"})
+        st.query_params.update({"page":"menu"})
         st.stop()
-    
-    if buscar_pressed:
-        if not query.strip():
-            st.warning("Por favor, ingrese un término de búsqueda.")
-        else:
-            # Concatena el término con el tema si éste es distinto de "Sin"
-            query_final = query.strip() + " " + tema if tema != "Sin" else query.strip()
-            st.info(f"Buscando por: '{query_final}' ...")
-            items = search_openalex(query_final, max_results=200)
-            if not items:
-                st.warning("No se encontraron resultados.")
-            else:
-                # Procesa los items para obtener datos adicionales útiles para las estadísticas
-                parsed_data = [parse_openalex_item(item) for item in items]
-                df = pd.DataFrame(parsed_data)
-                
-                # ----------------- ESTADÍSTICAS -----------------
-                # Número total de resultados
-                total_resultados = len(items)
-                st.sidebar.metric("Total Resultados", total_resultados)
-                
-                # Distribución por año: agrupar y contar
-                if "year" in df.columns:
-                    df_year = df["year"].value_counts().reset_index()
-                    df_year.columns = ["Año", "Frequencia"]
-                    chart_year = alt.Chart(df_year).mark_bar().encode(
-                        x=alt.X("Año:N", title="Año"),
-                        y=alt.Y("Frequencia:Q", title="Frequencia")
-                    ).properties(width=250, height=200)
-                    st.sidebar.altair_chart(chart_year, use_container_width=True)
-                
-                # Tópicos
-                all_topics = []
-                for lst in df["topics"].dropna():
-                    all_topics.extend(lst)
-                topics_count = Counter(all_topics)
-                if topics_count:
-                    top_topics = topics_count.most_common(5)
-                    df_topics = pd.DataFrame(top_topics, columns=["Tópico", "Frequencia"])
-                    st.sidebar.subheader("Tópicos Principales")
-                    st.sidebar.table(df_topics)
-                
-                # Instituições
-                all_inst = []
-                for lst in df["institutions"].dropna():
-                    all_inst.extend(lst)
-                inst_count = Counter(all_inst)
-                if inst_count:
-                    top_inst = inst_count.most_common(5)
-                    df_inst = pd.DataFrame(top_inst, columns=["Institución", "Frequencia"])
-                    st.sidebar.subheader("Instituciones")
-                    st.sidebar.table(df_inst)
-                
-                # Tipo de obra
-                if "type" in df.columns:
-                    type_count = df["type"].value_counts().reset_index()
-                    type_count.columns = ["Tipo", "Frequencia"]
-                    st.sidebar.subheader("Tipo de Obra")
-                    st.sidebar.table(type_count)
-                # ---------------------------------------------------
-                
-                # Exibe os resultados principais na área central
-                for idx, item in enumerate(items, start=1):
-                    title = item.get("title", "Sin Título")
-                    pub_date = item.get("publication_date", "Fecha no disponible")
-                    authors_data = item.get("authorships", [])
-                    authors_list = []
-                    for a in authors_data:
-                        author_info = a.get("author", {})
-                        author_name = author_info.get("display_name", "Autor desconocido")
-                        authors_list.append(author_name)
-                    authors_str = ", ".join(authors_list) if authors_list else "Ningún autor"
-                    
-                    link = item.get("doi") or "[Sin DOI]"
-                    if link == "[Sin DOI]":
-                        loc = item.get("primary_location", {})
-                        link_alt = loc.get("landing_page_url") if loc else None
-                        if link_alt:
-                            link = link_alt
-                    
-                    abstract_inv = item.get("abstract_inverted_index", {})
-                    abstract_text = invert_abstract(abstract_inv)
-                    
-                    st.markdown(f"### Artículo {idx}: {title}")
-                    st.write(f"**Fecha de Publicación:** {pub_date}")
-                    st.write(f"**Autores:** {authors_str}")
-                    st.write(f"**Tema:** {tema if tema != 'Sin' else 'Sin tema'}")
-                    st.write(f"**Resumen:** {abstract_text[:300]}{'...' if len(abstract_text) > 300 else ''}")
-                    st.markdown(f"[Enlace del Artículo]({link})")
-                    st.markdown("---")
-    
-    # Exibe también el historial de búsqueda y feedback en la parte inferior de la página principal
-    st.markdown("---")
-    st.subheader("Histórico de Búsqueda")
-    if "search_history_ex" in st.session_state:
-        for i, h in enumerate(st.session_state.search_history_ex, start=1):
-            st.write(f"{i}. {h}")
-    
-    with st.form(key="feedback_form_artigos"):
-        feedback = st.text_area("Deja tu feedback sobre la búsqueda", placeholder="Escribe tus comentarios...")
-        enviar_feedback = st.form_submit_button("Enviar Feedback")
-        if enviar_feedback:
-            # Se tiene una función add_feedback importada desde db.py para guardar el feedback
+
+    if not buscar:
+        return
+
+    if not query.strip():
+        st.warning("Por favor, ingrese un término de búsqueda.")
+        return
+
+    q_final = f"{query.strip()} {tema}" if tema!="Sin" else query.strip()
+    st.info(f"Buscando por **{q_final}** en **{fonte}** …")
+
+    # fetch & parse
+    items: List[Dict[str,Any]] = []
+    if fonte=="OpenAlex":
+        raw = search_openalex(q_final, max_results=200)
+        items = [parse_openalex(i) for i in raw]
+    else:  # OLACEFS Biblioteca
+        try:
+            raw = search_biblioteca(q_final, limit=200)
+        except Exception as e:
+            st.error(f"[Biblioteca] {e}")
+            return
+        # parse and drop any None
+        items = [x for x in (parse_biblioteca_item(i) for i in raw) if x]
+
+    if not items:
+        st.warning("No se encontraron resultados.")
+        return
+
+    df = pd.DataFrame(items)
+
+    # sidebar stats
+    st.sidebar.metric("Total resultados", len(items))
+    df_year = df["year"].value_counts().reset_index()
+    df_year.columns = ["Año","Frecuencia"]
+    chart = alt.Chart(df_year).mark_bar().encode(
+        x=alt.X("Año:N"), y=alt.Y("Frecuencia:Q")
+    ).properties(width=250, height=200)
+    st.sidebar.altair_chart(chart, use_container_width=True)
+
+    insts = collections.Counter(inst for lst in df["institutions"] for inst in lst)
+    if insts:
+        st.sidebar.subheader("Instituciones")
+        st.sidebar.table(pd.DataFrame(insts.most_common(5), columns=["Inst","Freq"]))
+
+    types = df["type"].value_counts().reset_index()
+    types.columns = ["Tipo","Freq"]
+    st.sidebar.subheader("Tipo/Formato")
+    st.sidebar.table(types)
+
+    # main listing
+    st.subheader("Resultados")
+    for i,row in enumerate(items, start=1):
+        st.markdown(f"### {i}. {row['title']}")
+        if row.get("date"):
+            st.write("**Fecha:**", row["date"])
+        if row.get("institutions"):
+            st.write("**Institución:**", ", ".join(row["institutions"]))
+        st.write("**Tipo:**", row["type"])
+        st.write("**Resumen:**", row["abstract"][:300] + ("…" if len(row["abstract"])>300 else ""))
+        st.markdown(f"[Enlace]({row['url']})")
+        st.markdown("---")
+
+    # feedback
+    st.markdown("##### ¿Te fue útil la búsqueda?")
+    with st.form("feedback_form"):
+        fb = st.text_area("Deja tu feedback")
+        if st.form_submit_button("Enviar"):
             from db import add_feedback
-            add_feedback(feedback, context="Artigos")
+            add_feedback(fb, context=f"Artigos_{fonte}")
             st.success("¡Gracias por tu feedback!")
 
-def show_inteligente():
-    # Para compatibilidad, redireciona para show_artigos (caso ambos sejam equivalentes)
+
+def show_inteligente() -> None:
     show_artigos()
 
-if __name__ == "__main__":
-    show
+
+if __name__=="__main__":
+    st.set_page_config("Debug Artigos", layout="centered")
+    show_artigos()
