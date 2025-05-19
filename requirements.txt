@@ -3,3 +3,5 @@ requests>=2.31
 python-dotenv>=1.0
 google-generativeai>=0.4  # já usava localmente
 SQLAlchemy>=2.0
+beautifulsoup4      # ← OBRIGATÓRIO para idi_api.py
+unidecode           # ← se ainda não estiver na lista
