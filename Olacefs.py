@@ -11,16 +11,26 @@ def _b64(img_path: str) -> str:
 
 
 def _render_result(item: dict, idx: int) -> None:
-    title = item.get("name") or item.get("title") or "Sem título"
-    descr = item.get("description") or item.get("notes", "") or "—"
-    url   = item.get("url") or item.get("tracking_summary", {}).get("url") \
-          or f"https://datos.olacefs.com/dataset/{item['id']}"
-    origin = "Recurso" if item["__origin__"] == "resource" else "Conjunto"
+    st.markdown(f"### {idx}. {item['metadata'].get('title', 'Sin título')}")
+    
+    desc = item['metadata'].get('description')
+    if desc:
+        st.write(f"**Descripción:** {desc}")
 
-    st.markdown(f"#### {idx}. {title}")
-    st.write(f"*Tipo:* **{origin}**")
-    st.write(descr[:400] + ("…" if len(descr) > 400 else ""))
-    st.markdown(f"[Abrir no portal]({url})")
+    org = item['metadata'].get('organization')
+    if org:
+        st.write(f"**Organización:** {org}")
+
+    ftype = item['metadata'].get('format')
+    if ftype:
+        st.write(f"**Formato:** {ftype}")
+
+    url = item['metadata'].get("url") or (
+        f"https://datos.olacefs.com/dataset/{item.get('id', '')}"
+        if item.get("id") else "https://datos.olacefs.com/"
+    )
+    
+    st.markdown(f"[Enlace al recurso]({url})")
     st.markdown("---")
 
 

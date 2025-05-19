@@ -1,53 +1,66 @@
+# buscadores.py  ─────────────────────────────────────────────────────────
 import base64
 import streamlit as st
 
-from Artigos import show_inteligente
+from Artigos       import show_inteligente
 from Especialistas import show_especialistas
-from Olacefs import show_olacefs_search         # ← NOVO
-from Chatbot   import show_chatbot
+from Olacefs       import show_olacefs_search
+from Chatbot       import show_chatbot
+from db_view import show_dados        # ➊  nova importação  (arquivo que você criou)
 
+
+# ───────────────────────────  Configuração  ────────────────────────────
 st.set_page_config(page_title="Buscador Inteligente", layout="centered")
 
-# ------------------------------------------------------------------ utils
-def get_base64_image(p):
-    with open(p, "rb") as f:
+# ──────────────────────────────  Utilitário  ───────────────────────────
+def _img_b64(path: str) -> str:
+    with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-# ------------------------------------------------------------------ menu
-def show_menu():
-    logo = get_base64_image("logo.png")
+# ───────────────────────────────  Menu UI  ─────────────────────────────
+def show_menu() -> None:
+    logo = _img_b64("logo.png")
     st.markdown(
         f"""
         <div style="text-align:center;padding-top:70px">
           <img src="data:image/png;base64,{logo}" width="100">
-          <h2>Buscador Inteligente</h2>
-          <h6>Conectando Investigación y Especialistas</h6>
+          <h2 style="margin-bottom:4px">Buscador Inteligente</h2>
+          <h6 style="margin-top:0">Conectando Investigación y Especialistas</h6>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    col1, col_mid, col2 = st.columns([1,1,1])
-    if col1.button("Artículos y Publicaciones", use_container_width=True):
-        st.session_state.page = "inteligente"
-        st.query_params.update({"page": "inteligente"})
+    col1, col_mid, col2 = st.columns([1, 1, 1], gap="large")
 
-    if col_mid.button("OLACEFS", use_container_width=True,
-                      type="primary",  # azul / texto branco
-                      help="Busca dados no portal datos.olacefs.com"):
-        st.session_state.page = "olacefs"
-        st.query_params.update({"page": "olacefs"})
+    if col1.button("Artículos y Publicaciones", use_container_width=True):
+        _goto("inteligente")
+
+    if col_mid.button(
+        "OLACEFS", use_container_width=True,
+        type="primary",            # azul + texto branco
+        help="Busca em https://datos.olacefs.com e na Biblioteca OLACEFS",
+    ):
+        _goto("olacefs")
 
     if col2.button("Personas Expertas", use_container_width=True):
-        st.session_state.page = "especialistas"
-        st.query_params.update({"page": "especialistas"})
+        _goto("especialistas")
 
 
-# ------------------------------------------------------------------ roteador
+# ──────────────────────────  Navegação helper  ────────────────────────
+def _goto(page: str) -> None:
+    """Muda página e grava na query-string."""
+    st.session_state.page = page
+    st.query_params.update({"page": page})
+
+
+# ──────────────────────────────  Bootstrap  ───────────────────────────
 if "page" not in st.session_state:
     st.session_state.page = st.query_params.get("page", "menu")
 
 page = st.session_state.page
+
+# ………………………………………………………………………………………………………………………………
 if page == "menu":
     show_menu()
 elif page == "inteligente":
@@ -56,8 +69,13 @@ elif page == "especialistas":
     show_especialistas()
 elif page == "olacefs":
     show_olacefs_search()
-
-# chatbot flutuante
+elif page == "dados":                 # ➋  aceita a URL /?page=dados
+    show_dados()
+else:                                 # ➌  fallback só se não for nenhum dos válidos
+    _goto("menu")
+    st.stop()
+# ─────────────────────────────  Chatbot  ──────────────────────────────
 show_chatbot()
+
 st.markdown("<div style='padding-top:40px'></div>", unsafe_allow_html=True)
-st.caption("© 2025 Desarrollado por Daniel Moraes")
+st.caption("© 2025 Desarrollado por Daniel Moraes")
