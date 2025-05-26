@@ -1,10 +1,10 @@
 # idi_api.py
-import requests
+import requests, re
 from bs4 import BeautifulSoup
 from typing import List, Dict
 
-IDI_BASE_URL = "https://www.idi.no"
-IDI_RESOURCE_PAGES = [
+IDI_BASE = "https://www.idi.no"
+IDI_SECTIONS = [
     "/our-resources/idi-reporting",
     "/our-resources/idi-administrative",
     "/our-resources/global-public-goods",
@@ -15,63 +15,45 @@ IDI_RESOURCE_PAGES = [
     "/our-resources/independent-sais",
 ]
 
-def _html_to_text(html: str) -> str:
-    return BeautifulSoup(html, "html.parser").get_text(strip=True)
+def _clean(txt: str) -> str:
+    return BeautifulSoup(txt, "html.parser").get_text(strip=True)
 
-def fetch_idi_documents() -> List[Dict]:
-    results = []
-    for page in IDI_RESOURCE_PAGES:
-        full_url = f"{IDI_BASE_URL}{page}"
+def search_idi_documents(term: str, *, rows: int = 200) -> List[Dict]:
+    term_low = term.lower()
+    docs: list[dict] = []
+
+    for sec in IDI_SECTIONS:
         try:
-            r = requests.get(full_url, timeout=20)
-            r.raise_for_status()
-            soup = BeautifulSoup(r.text, "html.parser")
-            links = soup.select("a[href*='/file']")
-            for link in links:
-                title = link.text.strip()
-                url = link.get("href")
+            html = requests.get(IDI_BASE + sec, timeout=20).text
+        except Exception:
+            continue
+        soup = BeautifulSoup(html, "html.parser")
+        for a in soup.select("a[href*='/file']"):
+            title = _clean(a.text)
+            if term_low in title.lower():
+                url = a["href"]
                 if not url.startswith("http"):
-                    url = IDI_BASE_URL + url
-                results.append({
-                    "title": title or "Documento sin título",
-                    "url": url,
-                    "type": "PDF",
-                    "source": full_url,
-                })
-        except Exception as e:
-            print(f"Erro ao acessar {full_url}: {e}")
-    return results
+                    url = IDI_BASE + url
+                docs.append(
+                    {
+                        "title": title or "Documento sin título",
+                        "url": url,
+                        "type": "PDF" if url.lower().endswith(".pdf") else "file",
+                        "source": IDI_BASE + sec,
+                    }
+                )
+            if len(docs) >= rows:
+                return docs
+    return docs
 
 def parse_idi_item(item: Dict) -> Dict:
     return {
-        "title": item.get("title"),
-        "date": None,  # Não disponível diretamente
-        "year": "desconocido",
-        "topics": [],
+        "title"       : item["title"],
+        "date"        : None,
+        "year"        : "desconocido",
+        "topics"      : [],
         "institutions": ["IDI"],
-        "type": item.get("type", "PDF"),
-        "abstract": f"Documento obtido de {item.get('source')}",
-        "url": item.get("url")
+        "type"        : item["type"],
+        "abstract"    : f"Documento obtenido de {item['source']}",
+        "url"         : item["url"],
     }
-
-# idi_api.py -------------------------------------------------------------
-from unidecode import unidecode      # pip install Unidecode
-from rapidfuzz import fuzz, process   # pip install rapidfuzz
-# ...
-
-def search_idi_documents(term: str, *, max_items: int = 100, **kwargs) -> List[Dict]:
-    """
-    Busca documentos nos recursos do IDI.
-    Aceita também `limit=` como sinônimo de `max_items` via **kwargs.
-    """
-    # compatibilidade com chamada usando limit=
-    if "limit" in kwargs and not kwargs.get("max_items"):
-        max_items = kwargs["limit"]
-
-    all_docs = fetch_idi_documents()          # função já existente
-    term_l   = term.lower()
-    filtered = [
-        doc for doc in all_docs
-        if term_l in doc["title"].lower()
-    ]
-    return filtered[:max_items]
