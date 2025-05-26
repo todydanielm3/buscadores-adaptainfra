@@ -5,7 +5,8 @@
 [![Python](https://img.shields.io/badge/python-3.11+-green?logo=python)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-![image](https://github.com/user-attachments/assets/a2729503-98b4-45af-add2-cb9a7c7432e6)
+![image](https://github.com/user-attachments/assets/a73c6a8b-829a-48a1-afe6-543fbfe514ce)
+
 
 
 
