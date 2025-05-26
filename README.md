@@ -1,58 +1,98 @@
-# **Buscador Inteligente**
+# 🧠 Buscadores – Pesquisa Inteligente de Auditorias, Publicações e Especialistas
 
-Conecta pesquisadores às publicações mais relevantes e a especialistas da área – tudo em uma única interface construída com **Streamlit** e integrada ao **Google Gemini**.
+[![Streamlit](https://img.shields.io/badge/built%20with-Streamlit-red?logo=streamlit)](https://streamlit.io/)
+[![SQLite](https://img.shields.io/badge/database-SQLite-blue?logo=sqlite)](https://sqlite.org)
+[![Python](https://img.shields.io/badge/python-3.11+-green?logo=python)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
----
+O **Buscadores** é uma aplicação interativa desenvolvida com [Streamlit](https://streamlit.io/) para facilitar o acesso e a análise de artigos, publicações, ferramentas e especialistas no contexto de auditorias, transparência pública e adaptação às mudanças climáticas na América Latina e Caribe.
 
-## ✨ Funcionalidades
+## 🚀 Funcionalidades
 
-| Módulo               | O que faz                                                                                                                            |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Artigos**          | Pesquisa artigos em bases abertas (OpenAlex). Exibe título, autores, resumo, data e link.                                            |
-| **Especialistas**    | Consulta perfis no ORCID. Mostra nome, instituição, biografia resumida e filtros (país, área e idioma) _mockados_ para demonstração. |
-| **Chatbot VerichIA** | Assistente virtual que responde em linguagem natural utilizando o modelo **Gemini**.                                                 |
+- 🔎 **Busca inteligente** por artigos e publicações usando análise textual;
+- 👤 **Consulta de especialistas** por área de atuação, com base em bases como ORCID e OpenAlex;
+- 🛠️ **Ferramentas OLACEFS** integradas via API (`https://datos.olacefs.com`);
+- 💬 **Chatbot** com IA para responder perguntas sobre os dados integrados;
+- 🧠 **Histórico de buscas e feedbacks** armazenados em banco SQLite;
+- 📊 Interface simples, rápida e intuitiva com layout responsivo.
 
----
+## 📂 Estrutura dos Módulos
 
-🛠️ Pré‑requisitos
-• Python ≥ 3.8
-• Streamlit
-• requests
-• Chave de API do Google Gemini
+```
+BUSCADORES/
+├── Artigos.py            # Lógica de busca e exibição de artigos
+├── Especialistas.py      # Busca e exibição de especialistas
+├── Olacefs.py            # Integração com dados e ferramentas OLACEFS
+├── Chatbot.py            # Interface com assistente baseado em IA
+├── db.py                 # Modelos ORM e conexão com SQLite
+├── db_view.py            # Visualização de dados armazenados
+├── buscadores.py         # Arquivo principal da aplicação Streamlit
+├── uploads/              # Uploads de arquivos e documentos
+├── buscadores.db         # Banco de dados local
+├── modelo_ia.py          # Vetorização e machine learning (se aplicável)
+├── requirements.txt      # Dependências do projeto
+└── README.md             # Este arquivo
+```
 
-⸻
+## ⚙️ Como Executar
 
-⚙️ Instalação
+1. Clone o repositório:
 
-Clone este repositório.
-cd buscador-inteligente
+```bash
+git clone https://github.com/todydanielm3/buscadores-adaptainfra.git
+cd buscadores-adaptainfra
+```
 
+2. Crie e ative um ambiente virtual:
+
+```bash
 python -m venv venv
-source venv/bin/activate # Windows: venv\Scripts\activate
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
+```
+
+3. Instale as dependências:
+
+```bash
 pip install -r requirements.txt
+```
 
-# variável de ambiente para o Gemini
+4. Execute a aplicação:
 
-export GOOGLE_API_KEY="SUA_CHAVE_AQUI"
+```bash
+streamlit run buscadores.py
+```
 
-⸻
+Acesse em [http://localhost:8501](http://localhost:8501) no seu navegador.
 
-▶️ Executando localmente
+## 🧠 Requisitos
 
-streamlit run app.py
+- Python 3.11+
+- Streamlit
+- SQLAlchemy
+- scikit-learn (para vetorização e clustering)
+- Requests, Pandas, entre outras (listadas no `requirements.txt`)
 
-A aplicação abrirá em http://localhost:8501.
+## 📌 Observações Técnicas
 
-⸻
+- As buscas por artigos e especialistas são processadas localmente e integradas via API.
+- O histórico de interações é salvo no banco SQLite (`buscadores.db`) para análise posterior.
+- O projeto segue os princípios de [Desenvolvimento Digital Responsável](https://digitalprinciples.org/).
 
-🚀 Deploy (opcional)
+## 🤝 Contribuições
 
-O arquivo .github/workflows/deploy.yml contém um fluxo básico de CI/CD para implantação em Streamlit Community Cloud.
-A única secret necessária é:
-• GOOGLE_API_KEY
+Sinta-se livre para contribuir! Sugestões de melhorias, novos módulos de busca ou integração com novas APIs são bem-vindas.
 
-⸻
+1. Fork este repositório
+2. Crie sua branch: `git checkout -b feature/nova-funcionalidade`
+3. Commit suas alterações: `git commit -m 'feat: nova funcionalidade'`
+4. Push para a branch: `git push origin feature/nova-funcionalidade`
+5. Crie um Pull Request
 
-📝 Licença
+## Variável de ambiente para o Gemini
 
-Distribuído sob a licença MIT. Consulte LICENSE para obter mais informações.
+> > > export GOOGLE_API_KEY="SUA_CHAVE_AQUI"
+
+## 📄 Licença
+
+Este projeto está licenciado sob a Licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
