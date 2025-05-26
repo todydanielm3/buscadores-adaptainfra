@@ -37,8 +37,8 @@ def show_menu() -> None:
         _goto("inteligente")
 
     if col_mid.button(
-        "OLACEFS", use_container_width=True,
-        type="primary",            # azul + texto branco
+        "HERRAMIENTA", use_container_width=True,
+        #type="primary",            # azul + texto branco
         help="Busca em https://datos.olacefs.com e na Biblioteca OLACEFS",
     ):
         _goto("olacefs")
