@@ -6,3 +6,4 @@ SQLAlchemy>=2.0
 beautifulsoup4      # ← OBRIGATÓRIO para idi_api.py
 unidecode           # ← se ainda não estiver na lista
 rapidfuzz       
+scikit-learn>=1.2
