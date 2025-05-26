@@ -5,7 +5,8 @@
 [![Python](https://img.shields.io/badge/python-3.11+-green?logo=python)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-![image](https://github.com/user-attachments/assets/1dd29a0b-c5a8-472c-b9f4-5c5bc66a3bca)
+![image](https://github.com/user-attachments/assets/a2729503-98b4-45af-add2-cb9a7c7432e6)
+
 
 
 O **Buscadores** é uma aplicação interativa desenvolvida com [Streamlit](https://streamlit.io/) para facilitar o acesso e a análise de artigos, publicações, ferramentas e especialistas no contexto de auditorias, transparência pública e adaptação às mudanças climáticas na América Latina e Caribe.
