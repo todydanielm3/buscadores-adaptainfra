@@ -11,7 +11,8 @@ import streamlit as st
 from olacefs_api    import search_items, OlacefsAPIError          # OLACEFS Datos
 from biblioteca_api import search_biblioteca, parse_biblioteca_item
 from idi_api        import search_idi_documents, parse_idi_item
-from db             import add_search_history, add_feedback       # grava BD
+from db             import add_search_history, add_feedback, SessionLocal, SearchHistory  # grava BD
+from recomendador   import gerar_clusters_termos, termos_relacionados
 
 # ───────────────────────── utilidades comuns ───────────────────────
 def _b64(path: str) -> str:
@@ -23,6 +24,17 @@ def _invert_abstract(idx: Optional[Dict[str, List[int]]]) -> str:
         return "Resumen no disponible."
     ordered = [(p, w) for w, ps in idx.items() for p in ps]
     return " ".join(w for _, w in sorted(ordered))
+
+def carregar_historico():
+    with SessionLocal() as session:
+        result = session.query(SearchHistory.term).all()
+    df = pd.DataFrame(result, columns=["term"])
+    return df
+
+def _goto_busca(term: str) -> None:
+    st.session_state.page = "inteligente"
+    st.session_state.query = term
+    st.query_params.update({"page": "inteligente", "q": term})
 
 # ───────────────────────── OpenAlex helpers ────────────────────────
 def _openalex_search(q: str, n: int = 200) -> list[dict]:
@@ -177,6 +189,16 @@ def show_artigos() -> None:
         st.write("**Resumen / descripción:**", row["abstract"][:400], "…")
         st.markdown(f"[Enlace]({row['url']})")
         st.markdown("---")
+
+    # Sugestões
+    df_hist = carregar_historico()
+    if not df_hist.empty:
+        df_clusterizado, modelo_kmeans = gerar_clusters_termos(df_hist)
+        sugestoes = termos_relacionados(q, df_clusterizado, modelo_kmeans)
+        if sugestoes:
+            st.subheader("🔁 Sugestões baseadas em sua busca:")
+            for s in sugestoes:
+                st.button(s, on_click=lambda termo=s: _goto_busca(termo))
 
     # Feedback
     with st.form("fb"):

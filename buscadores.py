@@ -31,9 +31,9 @@ def show_menu() -> None:
         unsafe_allow_html=True,
     )
 
-    col1, col_mid, col2 = st.columns([1, 1, 1], gap="large")
+    col1,col2, col_mid = st.columns([1, 1, 1], gap="large")
 
-    if col1.button("Artículos y Publicaciones", use_container_width=True):
+    if col1.button("Artículos Publicaciones", use_container_width=True):
         _goto("inteligente")
 
     if col_mid.button(

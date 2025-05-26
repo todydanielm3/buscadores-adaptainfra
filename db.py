@@ -2,16 +2,20 @@ from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 from pathlib import Path
 import datetime as _dt
+from sqlalchemy.orm import sessionmaker
 
-DB_PATH = Path(__file__).with_name("buscadores.db")
-engine   = create_engine(f"sqlite:///{DB_PATH}", echo=False, future=True)
+engine = create_engine(f"sqlite:///buscadores.db")
+SessionLocal = sessionmaker(bind=engine)
+
+#DB_PATH = Path(__file__).with_name("buscadores.db")
+#engine   = create_engine(f"sqlite:///{DB_PATH}", echo=False, future=True)
 Base     = declarative_base()
 Session  = sessionmaker(bind=engine)
 
 class SearchHistory(Base):
     __tablename__ = "search_history"
     id        = Column(Integer, primary_key=True)
-    term      = Column(String(400), nullable=False)
+    term = Column(String(256), nullable=False)
     context   = Column(String(100), nullable=False)
     timestamp = Column(DateTime, default=_dt.datetime.utcnow)
 
