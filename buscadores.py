@@ -49,9 +49,17 @@ def show_menu() -> None:
 
 # ──────────────────────────  Navegação helper  ────────────────────────
 def _goto(page: str) -> None:
-    """Muda página e grava na query-string."""
+    """Atualiza a página e força redirecionamento imediato, compatível com várias versões."""
     st.session_state.page = page
     st.query_params.update({"page": page})
+    
+    # Compatível com versões novas e antigas do Streamlit
+    if hasattr(st, "rerun"):
+        st.rerun()
+    elif hasattr(st, "experimental_rerun"):
+        st.experimental_rerun()
+    else:
+        st.warning("Sua versão do Streamlit não suporta rerun automático. Clique novamente.")
 
 
 # ──────────────────────────────  Bootstrap  ───────────────────────────
