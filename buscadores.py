@@ -23,7 +23,7 @@ def show_menu() -> None:
     st.markdown(
         f"""
         <div style="text-align:center;padding-top:70px">
-          <img src="data:image/png;base64,{logo}" width="1000">
+          <img src="data:image/png;base64,{logo}" width="500">
           <h2 style="margin-bottom:4px">Buscador Inteligente</h2>
           <h6 style="margin-top:0">Conectando Investigación y Especialistas</h6>
         </div>
@@ -31,17 +31,17 @@ def show_menu() -> None:
         unsafe_allow_html=True,
     )
 
-    col1,col2, col_mid = st.columns([1, 1, 1], gap="large")
+    col1,col2 = st.columns([1, 1], gap="large")
 
     if col1.button("Artículos Publicaciones", use_container_width=True):
         _goto("inteligente")
 
-    if col_mid.button(
-        "HERRAMIENTA", use_container_width=True,
-        #type="primary",            # azul + texto branco
-        help="Busca em https://datos.olacefs.com e na Biblioteca OLACEFS",
-    ):
-        _goto("olacefs")
+    # if col_mid.button(
+    #     "HERRAMIENTA", use_container_width=True,
+    #     #type="primary",            # azul + texto branco
+    #     help="Busca em https://datos.olacefs.com e na Biblioteca OLACEFS",
+    # ):
+    #     _goto("olacefs")
 
     if col2.button("Personas Expertas", use_container_width=True):
         _goto("especialistas")

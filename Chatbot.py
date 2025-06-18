@@ -45,6 +45,15 @@ def show_chatbot() -> None:
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             font-family: 'Segoe UI', sans-serif;
         }}
+        .chatbot-header {{
+            background: linear-gradient(135deg,#008000,#800080,#0000FF,#FF0000);
+            color: white;
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }}
         .chatbot-header img {{
             height: 24px;
             margin-right: 10px;
@@ -61,17 +70,29 @@ def show_chatbot() -> None:
             padding: 8px 10px;
             border-radius: 8px;
             max-width: 90%;
+            display: flex;
+            align-items: flex-start;
         }}
         .chat-user {{
             background: #DCF8C6;
             margin-left: auto;
             text-align: right;
+            justify-content: flex-end;
+        }}
+        .chatbot-avatar {{
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            border-radius: 12px;
+        }}
+        .chatbot-text {{
+            flex: 1;
         }}
         </style>
         <div class="chatbot-container">
             <div class="chatbot-header" onclick="toggleChatbot()">
                 <img src="data:image/png;base64,{mini_logo_b64}" alt="logo">
-                <span>Asistente</span>
+                <span>Chatbot</span>
             </div>
             <div class="chatbot-body" id="chat-body">
                 <div id="chat-block"></div>
@@ -93,31 +114,38 @@ def show_chatbot() -> None:
 
     # Área funcional invisível do Streamlit
     with st.container():
-        if "gemini_flash" not in st.session_state:
-            st.session_state.gemini_flash = genai.GenerativeModel("models/gemini-1.5-flash")
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
 
-        for i, msg in enumerate(st.session_state.chat_history):
-            is_user = msg["role"] == "user"
-            css_class = "chat-user" if is_user else ""
-            st.markdown(
-                f"<div class='chat-message {css_class}'>{msg['parts'][0]}</div>",
-                unsafe_allow_html=True
-            )
+        if "chat_session" not in st.session_state:
+            model = genai.GenerativeModel("models/gemini-1.5-flash")
+            st.session_state.chat_session = model.start_chat(history=st.session_state.chat_history)
 
-        prompt = st.chat_input("Mensaje al asistente:")
+        for msg in st.session_state.chat_history:
+            if msg["role"] == "user":
+                st.markdown(
+                    f"<div class='chat-message chat-user'>{msg['parts'][0]}</div>",
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    f"""
+                    <div class='chat-message'>
+                        <img src="data:image/png;base64,{mini_logo_b64}" class="chatbot-avatar">
+                        <div class='chatbot-text'>{msg['parts'][0]}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+        prompt = st.chat_input("Mensaje al Chatbot:")
         if prompt:
             st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
 
             with st.spinner("Pensando..."):
                 try:
-                    response = st.session_state.gemini_flash.generate_content(
-                        st.session_state.chat_history,
-                        request_options={"timeout": 60}
-                    )
-                    reply = response.text.strip()
-                    st.session_state.chat_history.append({"role": "model", "parts": [reply]})
+                    response = st.session_state.chat_session.send_message(prompt)
+                    st.session_state.chat_history.append({"role": "model", "parts": [response.text.strip()]})
                     st.rerun()
                 except Exception as e:
                     st.error(f"Erro ao obter resposta: {e}")
