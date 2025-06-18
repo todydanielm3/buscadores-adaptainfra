@@ -11,6 +11,7 @@ from db_view import show_dados        # ➊  nova importação  (arquivo que voc
 
 # ───────────────────────────  Configuração  ────────────────────────────
 st.set_page_config(page_title="Buscador Inteligente", layout="centered")
+st.snow()
 
 # ──────────────────────────────  Utilitário  ───────────────────────────
 def _img_b64(path: str) -> str:

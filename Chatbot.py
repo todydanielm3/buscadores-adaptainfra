@@ -2,8 +2,12 @@ import os
 import base64
 from pathlib import Path
 import streamlit as st
-import google.generativeai as genai
 from dotenv import load_dotenv
+
+from langchain_community.vectorstores import FAISS
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_core.documents import Document
+from langchain.chains import RetrievalQA
 
 # ─────────── Chave da API ─────────────────────────────────────
 load_dotenv()
@@ -16,8 +20,7 @@ if not API_KEY:
     st.error("Chave da API do Gemini não encontrada.")
     st.stop()
 
-genai.configure(api_key=API_KEY, transport="rest")
-
+# ─────────── Imagem do chatbot ────────────────────────────────
 ASSETS_DIR = Path(__file__).parent
 IMG_PATH = ASSETS_DIR / "VerichIA.png"
 
@@ -25,10 +28,11 @@ def get_base64_image(file_path: Path | str) -> str:
     with open(file_path, "rb") as img:
         return base64.b64encode(img.read()).decode()
 
+# ─────────── Função principal ─────────────────────────────────
 def show_chatbot() -> None:
     mini_logo_b64 = get_base64_image(IMG_PATH)
 
-    # HTML/CSS do chat flutuante
+    # HTML/CSS do chatbot flutuante
     st.markdown(
         f"""
         <style>
@@ -84,19 +88,36 @@ def show_chatbot() -> None:
         unsafe_allow_html=True,
     )
 
-    # Área funcional invisível do Streamlit
+    # Inicializa sessão e modelo
     with st.container():
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
 
-        if "chat_session" not in st.session_state:
-            model = genai.GenerativeModel("models/gemini-1.5-flash")
-            st.session_state.chat_session = model.start_chat(history=st.session_state.chat_history)
+        # Carrega vetor e embeddings uma única vez
+        if "retriever" not in st.session_state:
+            embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=API_KEY)
+            db = FAISS.load_local("adapta_chatbot/vectordb", embeddings, allow_dangerous_deserialization=True)
+            retriever = db.as_retriever(search_kwargs={"k": 4})
+            st.session_state.retriever = retriever
 
+        # Cria cadeia de RAG
+        if "qa_chain" not in st.session_state:
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-1.5-flash",
+                google_api_key=API_KEY,
+                temperature=0.2,
+            )
+            st.session_state.qa_chain = RetrievalQA.from_chain_type(
+                llm=llm,
+                retriever=st.session_state.retriever,
+                return_source_documents=False
+            )
+
+        # Mostra histórico
         for msg in st.session_state.chat_history:
             if msg["role"] == "user":
                 st.markdown(
-                    f"<div class='chat-message chat-user'>{msg['parts'][0]}</div>",
+                    f"<div class='chat-message chat-user'>{msg['content']}</div>",
                     unsafe_allow_html=True
                 )
             else:
@@ -104,20 +125,21 @@ def show_chatbot() -> None:
                     f"""
                     <div class='chat-message'>
                         <img src="data:image/png;base64,{mini_logo_b64}" class="chatbot-avatar">
-                        <div class='chatbot-text'>{msg['parts'][0]}</div>
+                        <div class='chatbot-text'>{msg['content']}</div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
-        prompt = st.chat_input("Mensaje al Chatbot:")
+        # Entrada do usuário
+        prompt = st.chat_input("Mensagem ao Chatbot:")
         if prompt:
-            st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
+            st.session_state.chat_history.append({"role": "user", "content": prompt})
 
-            with st.spinner("Pensando..."):
+            with st.spinner("Analisando..."):
                 try:
-                    response = st.session_state.chat_session.send_message(prompt)
-                    st.session_state.chat_history.append({"role": "model", "parts": [response.text.strip()]})
+                    resposta = st.session_state.qa_chain.run(prompt)
+                    st.session_state.chat_history.append({"role": "model", "content": resposta})
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Erro ao obter resposta: {e}")
+                    st.error(f"Erro ao gerar resposta: {e}")

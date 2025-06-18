@@ -1,0 +1,9 @@
+Conozca al nuevo proyecto regional OLACEFS-GIZ sobre infraestructuras sostenibles
+
+En octubre de 2024, se inició el nuevo proyecto regional **"Promoción de Medidas de Adaptación al Cambio Climático Impulsadas por las Entidades Fiscalizadoras Superiores en América Latina y el Caribe"** . Por encargo del Ministerio Federal de Cooperación Económica y Desarrollo (BMZ) de Alemania, el proyecto tiene el objetivo de establecer requisitos institucionales necesarios para llevar a cabo auditorías de infraestructuras sostenibles por parte de las instituciones de la Organización Latinoamericana y del Caribe de Entidades Fiscalizadoras Superiores (OLACEFS).
+
+Este proyecto impulsa formatos de intercambio y desarrollo de capacidades para que las EFS puedan evaluar la sostenibilidad de los proyectos de infraestructura para la adaptación al cambio climático no solo de fenómenos climáticos extremos que ya se están manifestando, sino también con una perspectiva a largo plazo. El enfoque del proyecto considera los derechos humanos, la buena gobernanza, la digitalización y la protección del medio ambiente como áreas clave para asegurar métodos innovadores para los mecanismos de control.
+
+Este esfuerzo se debe a la alianza estratégica entre la OLACEFS y la GIZ, con el propósito de fortalecer la integración de medidas adaptativas al cambio climático en el control externo, garantizando que los proyectos de infraestructura sean gestionados de manera eficiente y responsable.
+
+El 25 de octubre, el proyecto participó de la sesión administrativa de la XXXIII Asamblea General Ordinaria de la OLACEFS, en Panamá, en la que se firmó el Memorando de Entendimiento (MoU), un marco de consolidación para la cooperación técnica OLACEFS-GIZ para una exitosa implementación del proyecto.
