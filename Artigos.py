@@ -75,7 +75,7 @@ def show_artigos() -> None:
     st.markdown(
         f"""
         <div style="text-align:center;margin-bottom:26px">
-          <img src="data:image/png;base64,{_b64('logo.png')}" width="120">
+          <img src="data:image/png;base64,{_b64('logo.png')}" width="1000">
           <h2 style="margin-bottom:4px">Búsqueda inteligente</h2>
           <h6 style="margin-top:0">Conectando investigación y especialistas</h6>
         </div>""",

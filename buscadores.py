@@ -23,7 +23,7 @@ def show_menu() -> None:
     st.markdown(
         f"""
         <div style="text-align:center;padding-top:70px">
-          <img src="data:image/png;base64,{logo}" width="100">
+          <img src="data:image/png;base64,{logo}" width="1000">
           <h2 style="margin-bottom:4px">Buscador Inteligente</h2>
           <h6 style="margin-top:0">Conectando Investigación y Especialistas</h6>
         </div>
