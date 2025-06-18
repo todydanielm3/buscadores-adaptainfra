@@ -60,7 +60,7 @@ def show_especialistas():
     st.markdown(
         f"""
         <div style="text-align: center; margin-bottom: 30px;">
-            <img src="data:image/png;base64,{logo_base64}" width="1000">
+            <img src="data:image/png;base64,{logo_base64}" width="500">
             <h1 style="font-family: 'Roboto', sans-serif; color: #333;">Búsqueda de Expertos</h1>
             <p style="font-family: 'Roboto', sans-serif;">Conectando investigación y profesionales</p>
         </div>

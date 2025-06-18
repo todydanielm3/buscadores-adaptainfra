@@ -45,25 +45,6 @@ def show_chatbot() -> None:
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             font-family: 'Segoe UI', sans-serif;
         }}
-        .chatbot-header {{
-            background: linear-gradient(135deg,#008000,#800080,#0000FF,#FF0000);
-            color: white;
-            padding: 10px;
-            border-radius: 10px 10px 0 0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }}
-        .chatbot-header img {{
-            height: 24px;
-            margin-right: 10px;
-        }}
-        .chatbot-body {{
-            display: none;
-            padding: 10px;
-            overflow-y: auto;
-            max-height: 400px;
-        }}
         .chat-message {{
             background: #f1f1f1;
             margin-bottom: 8px;
@@ -89,15 +70,6 @@ def show_chatbot() -> None:
             flex: 1;
         }}
         </style>
-        <div class="chatbot-container">
-            <div class="chatbot-header" onclick="toggleChatbot()">
-                <img src="data:image/png;base64,{mini_logo_b64}" alt="logo">
-                <span>Chatbot</span>
-            </div>
-            <div class="chatbot-body" id="chat-body">
-                <div id="chat-block"></div>
-            </div>
-        </div>
         <script>
         function toggleChatbot() {{
             var body = document.getElementById("chat-body");
