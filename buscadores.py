@@ -11,7 +11,10 @@ from db_view import show_dados        # ➊  nova importação  (arquivo que voc
 
 # ───────────────────────────  Configuração  ────────────────────────────
 st.set_page_config(page_title="Buscador Inteligente", layout="centered")
+<<<<<<< HEAD
 #st.snow()
+=======
+>>>>>>> 1034d35 (Return chat gemini)
 
 # ──────────────────────────────  Utilitário  ───────────────────────────
 def _img_b64(path: str) -> str:
