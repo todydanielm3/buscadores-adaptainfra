@@ -1,14 +1,15 @@
 # Artigos.py  ─────────────────────────────────────────────────────────
 from __future__ import annotations
-import base64, collections, requests, datetime
+import collections, requests, datetime
 from typing import List, Dict, Any, Optional
+from pathlib import Path
 
 import altair as alt
 import pandas as pd
 import streamlit as st
 
 # Integrações externas
-from olacefs_api    import search_items, OlacefsAPIError          # OLACEFS Datos
+from olacefs_api import search_items, OlacefsAPIError          # OLACEFS Datos
 from biblioteca_api import search_biblioteca, parse_biblioteca_item
 from idi_api        import search_idi_documents, parse_idi_item
 from db             import add_search_history, add_feedback, SessionLocal, SearchHistory  # grava BD
@@ -16,7 +17,10 @@ from recomendador   import gerar_clusters_termos, termos_relacionados
 
 # ───────────────────────── utilidades comuns ───────────────────────
 def _b64(path: str) -> str:
-    with open(path, "rb") as img:
+    # Garante que o caminho seja relativo à raiz do projeto
+    full_path = Path(__file__).parent.parent / path
+    with open(full_path, "rb") as img:
+        import base64
         return base64.b64encode(img.read()).decode()
 
 def _invert_abstract(idx: Optional[Dict[str, List[int]]]) -> str:
@@ -75,7 +79,7 @@ def show_artigos() -> None:
     st.markdown(
         f"""
         <div style="text-align:center;margin-bottom:26px">
-          <img src="data:image/png;base64,{_b64('logo.png')}" width="500">
+          <img src="data:image/png;base64,{_b64('assets/logo.png')}" width="500">
           <h2 style="margin-bottom:4px">Búsqueda inteligente</h2>
           <h6 style="margin-top:0">Conectando investigación y especialistas</h6>
         </div>""",

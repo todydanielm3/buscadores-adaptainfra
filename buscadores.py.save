@@ -11,7 +11,6 @@ from db_view import show_dados        # ➊  nova importação  (arquivo que voc
 
 # ───────────────────────────  Configuração  ────────────────────────────
 st.set_page_config(page_title="Buscador Inteligente", layout="centered")
-#st.snow()
 
 # ──────────────────────────────  Utilitário  ───────────────────────────
 def _img_b64(path: str) -> str:
@@ -24,7 +23,7 @@ def show_menu() -> None:
     st.markdown(
         f"""
         <div style="text-align:center;padding-top:70px">
-          <img src="data:image/png;base64,{logo}" width="500">
+          <img src="data:image/png;base64,{logo}" width="100">
           <h2 style="margin-bottom:4px">Buscador Inteligente</h2>
           <h6 style="margin-top:0">Conectando Investigación y Especialistas</h6>
         </div>
@@ -32,17 +31,17 @@ def show_menu() -> None:
         unsafe_allow_html=True,
     )
 
-    col1,col2 = st.columns([1, 1], gap="large")
+    col1,col2, col_mid = st.columns([1, 1, 1], gap="large")
 
     if col1.button("Artículos Publicaciones", use_container_width=True):
         _goto("inteligente")
 
-    # if col_mid.button(
-    #     "HERRAMIENTA", use_container_width=True,
-    #     #type="primary",            # azul + texto branco
-    #     help="Busca em https://datos.olacefs.com e na Biblioteca OLACEFS",
-    # ):
-    #     _goto("olacefs")
+    if col_mid.button(
+        "HERRAMIENTA", use_container_width=True,
+        #type="primary",            # azul + texto branco
+        help="Busca em https://datos.olacefs.com e na Biblioteca OLACEFS",
+    ):
+        _goto("olacefs")
 
     if col2.button("Personas Expertas", use_container_width=True):
         _goto("especialistas")
@@ -50,22 +49,13 @@ def show_menu() -> None:
 
 # ──────────────────────────  Navegação helper  ────────────────────────
 def _goto(page: str) -> None:
-    """Atualiza a página e força redirecionamento imediato, compatível com várias versões."""
+    """Muda página e grava na query-string."""
     st.session_state.page = page
     st.query_params.update({"page": page})
-    
-    # Compatível com versões novas e antigas do Streamlit
-    if hasattr(st, "rerun"):
-        st.rerun()
-    elif hasattr(st, "experimental_rerun"):
-        st.experimental_rerun()
-    else:
-        st.warning("Sua versão do Streamlit não suporta rerun automático. Clique novamente.")
 
 
 # ──────────────────────────────  Bootstrap  ───────────────────────────
-if "page" not in st.session_state:
-    st.session_state.page = st.query_params.get("page", "menu")
+if "page" not in st    st.session_state.page = st.query_params.get("page", "menu")
 
 page = st.session_state.page
 

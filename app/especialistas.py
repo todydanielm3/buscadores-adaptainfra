@@ -1,11 +1,12 @@
 import streamlit as st
 import requests
-import base64
+from pathlib import Path
 from db import add_search_history, add_feedback
 
-def get_base64_image(file_path):
-    """Lê el archivo de imagen y retorna su contenido codificado en base64."""
-    with open(file_path, "rb") as image_file:
+def get_base64_image(file_path: str) -> str:
+    full_path = Path(__file__).parent.parent / file_path
+    with open(full_path, "rb") as image_file:
+        import base64
         return base64.b64encode(image_file.read()).decode()
 
 def buscar_orcid(query, max_results=30):
@@ -56,7 +57,7 @@ def obter_detalhes_orcid(orcid_id: str) -> dict:
         return {"name": "Nombre no disponible", "bio": "Bio no disponible.", "institution": "Institución no informada"}
 
 def show_especialistas():
-    logo_base64 = get_base64_image("logo.png")
+    logo_base64 = get_base64_image("assets/logo.png")
     st.markdown(
         f"""
         <div style="text-align: center; margin-bottom: 30px;">
