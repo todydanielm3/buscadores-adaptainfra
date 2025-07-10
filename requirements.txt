@@ -6,3 +6,4 @@ pandas
 altair
 faiss-cpu
 beautifulsoup4
+scikit-learn
