@@ -4,6 +4,9 @@ from pathlib import Path
 import streamlit as st
 from dotenv import load_dotenv
 import re
+import sys
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
@@ -302,7 +305,7 @@ def show_chatbot() -> None:
                         "lo siento",
                         "disculpa",
                         "lo siento, pero no tengo información",
-                        "lo siento, pero no tengo información sobre",
+                        "lo siento, pero no tengo informação",
                         "lo siento, mas não tenho informação",
                         "lo siento, mas não tenho informação sobre",
                         "desculpe, não tenho essa informação",

@@ -2,11 +2,14 @@
 from __future__ import annotations
 import collections, requests, datetime
 from typing import List, Dict, Any, Optional
+import sys
 from pathlib import Path
 
 import altair as alt
 import pandas as pd
 import streamlit as st
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 # Integrações externas
 from olacefs_api import search_items, OlacefsAPIError          # OLACEFS Datos

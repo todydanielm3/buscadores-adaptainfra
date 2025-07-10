@@ -2,7 +2,10 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import sys
 from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 DB_PATH = Path(__file__).with_name("buscadores.db")
 

@@ -1,8 +1,12 @@
 import streamlit as st
 import base64
 from typing import List
+import sys
+from pathlib import Path
 
 from olacefs_api import search_items, OlacefsAPIError
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 
 def _b64(img_path: str) -> str:

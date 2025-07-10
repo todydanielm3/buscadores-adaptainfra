@@ -3,12 +3,16 @@ import streamlit as st
 st.set_page_config(page_title="Buscador Inteligente", layout="centered")
 
 import base64
+import sys
+from pathlib import Path
 
 from artigos import show_inteligente
 from app.especialistas import show_especialistas
 from app.olacefs import show_olacefs_search
 from app.chatbot import show_chatbot
 from app.db_view import show_dados
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 # Função utilitária para converter imagem em base64
 def _img_b64(path: str) -> str:
