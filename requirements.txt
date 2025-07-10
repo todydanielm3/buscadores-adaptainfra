@@ -5,3 +5,4 @@ langchain-google-genai
 pandas
 altair
 faiss-cpu
+beautifulsoup4
