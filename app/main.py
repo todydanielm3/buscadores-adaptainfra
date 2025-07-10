@@ -4,7 +4,7 @@ st.set_page_config(page_title="Buscador Inteligente", layout="centered")
 
 import base64
 
-from app.artigos import show_inteligente
+from artigos import show_inteligente
 from app.especialistas import show_especialistas
 from app.olacefs import show_olacefs_search
 from app.chatbot import show_chatbot
