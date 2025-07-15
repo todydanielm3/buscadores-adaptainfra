@@ -56,6 +56,12 @@ def obter_detalhes_orcid(orcid_id: str) -> dict:
     except requests.RequestException:
         return {"name": "Nombre no disponible", "bio": "Bio no disponible.", "institution": "Institución no informada"}
 
+PAISES_LATINO_CARIBE = [
+    "Argentina", "Bolivia", "Brasil", "Chile", "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador",
+    "Guatemala", "Honduras", "Jamaica", "México", "Nicaragua", "Panamá", "Paraguay", "Perú", "Puerto Rico",
+    "República Dominicana", "Uruguay", "Venezuela", "Haití"
+]
+
 def show_especialistas():
     logo_base64 = get_base64_image("assets/logo.png")
     st.markdown(
@@ -72,6 +78,7 @@ def show_especialistas():
     # Formulário para búsqueda
     with st.form(key="search_form_especialistas", clear_on_submit=False):
         especialidad = st.text_input("Especialidad", placeholder="Ingrese la especialidad...")
+        pais = st.selectbox("País", ["Todos"] + PAISES_LATINO_CARIBE)
         col1, col2 = st.columns(2)
         buscar_pressed = col1.form_submit_button("Buscar")
         volver_pressed = col2.form_submit_button("Volver al menú")
@@ -85,36 +92,44 @@ def show_especialistas():
         if not especialidad.strip():
             st.warning("Por favor, ingrese una especialidad.")
         else:
-            st.info(f"Buscando especialistas con publicaciones relacionadas a: '{especialidad.strip()}' ...")
+            st.info(f"Buscando especialistas relacionados a: '{especialidad.strip()}' en {pais} ...")
             add_search_history(especialidad.strip(), context="Especialistas")
             resultados = buscar_orcid(especialidad.strip())
             if not resultados:
                 st.warning("No se encontraron especialistas.")
             else:
-                st.success("Especialistas encontrados:")
-                for idx, r in enumerate(resultados, start=1):
+                # Filtra especialistas pelo país selecionado
+                especialistas_filtrados = []
+                for r in resultados:
                     orcid_info = r.get('orcid-identifier', {})
                     orcid_id = orcid_info.get('path', 'N/A')
-                    profile_url = f"https://orcid.org/{orcid_id}"
-                    
                     detalles = obter_detalhes_orcid(orcid_id)
-                    name = detalles.get("name", f"Especialista {idx}")
-                    bio = detalles.get("bio")
-                    institution = detalles.get("institution")
-                    
-                    with st.container():
-                        col_img, col_info = st.columns([1, 4])
-                        with col_img:
-                            st.image("https://img.freepik.com/vetores-premium/auditoria-negocios-e-financas-minima-icon-logo_186868-31.jpg", width=80)
-                        with col_info:
-                            st.markdown(f"### {name}")
-                            st.markdown(f"🔗 [Perfil ORCID]({profile_url})")
-                            st.markdown(f"🏢 **Institución:** {institution}")
-                            bio_text = bio if len(bio) <= 250 else bio[:250] + "..."
-                            st.markdown(f"📝 {bio_text}")
-                        st.markdown("---")
+                    institution = detalles.get("institution", "")
+                    if pais == "Todos" or (pais.lower() in institution.lower()):
+                        especialistas_filtrados.append((orcid_id, detalles))
+                
+                if not especialistas_filtrados:
+                    st.warning(f"No se encontraron especialistas en {pais}.")
+                else:
+                    st.success(f"Especialistas encontrados en {pais if pais != 'Todos' else 'todos los países'}:")
+                    for idx, (orcid_id, detalles) in enumerate(especialistas_filtrados, start=1):
+                        profile_url = f"https://orcid.org/{orcid_id}"
+                        name = detalles.get("name", f"Especialista {idx}")
+                        bio = detalles.get("bio")
+                        institution = detalles.get("institution")
+                        with st.container():
+                            col_img, col_info = st.columns([1, 4])
+                            with col_img:
+                                st.image("https://img.freepik.com/vetores-premium/auditoria-negocios-e-financas-minima-icon-logo_186868-31.jpg", width=80)
+                            with col_info:
+                                st.markdown(f"### {name}")
+                                st.markdown(f"🔗 [Perfil ORCID]({profile_url})")
+                                st.markdown(f"🏢 **Institución:** {institution}")
+                                bio_text = bio if len(bio) <= 250 else bio[:250] + "..."
+                                st.markdown(f"📝 {bio_text}")
+                            st.markdown("---")
     
-    # Exibir histórico de búsqueda
+    # Exibir histórico de busca
     st.markdown("---")
     st.subheader("Histórico de Búsqueda")
     if "search_history_ex" in st.session_state:

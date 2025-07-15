@@ -77,6 +77,16 @@ def _openalex_parse(it: dict) -> dict:
     }
 
 # ───────────────────────── interface principal ──────────────────────
+def detectar_idioma(texto: str) -> str:
+    """Detecta se o termo está em português ou espanhol."""
+    pt_palavras = ["não", "informação", "obrigado", "você", "como", "qual", "quem", "onde", "quando", "por quê", "porque"]
+    es_palavras = ["no", "información", "gracias", "usted", "cómo", "cuál", "quién", "dónde", "cuándo", "por qué", "porque"]
+    pt_count = sum(1 for p in pt_palavras if p in texto.lower())
+    es_count = sum(1 for p in es_palavras if p in texto.lower())
+    if es_count > pt_count:
+        return "es"
+    return "pt"
+
 def show_artigos() -> None:
     # Cabeçalho
     st.markdown(
@@ -92,10 +102,9 @@ def show_artigos() -> None:
     # Formulário
     with st.form("form_busca", clear_on_submit=False):
         termo = st.text_input("Término")
-        # Removido o filtro de tema
         fonte = st.radio(
             "Fuente de datos",
-            ["Datos Generales", "OLACEFS Biblioteca"],  # Removido "IDI"
+            ["Datos Generales", "OLACEFS Biblioteca"],
             horizontal=True,
         )
         col1, col2 = st.columns(2)
@@ -109,34 +118,39 @@ def show_artigos() -> None:
     if not ok:
         return
     if not termo.strip():
-        st.warning("Ingrese un término de búsqueda.")
+        idioma = detectar_idioma(termo)
+        msg = "Ingrese un término de búsqueda." if idioma == "es" else "Digite um termo de busca."
+        st.warning(msg)
         return
 
-    q = termo.strip()  # Removido tema do termo
-    st.info(f"Buscando **{q}** en **{fonte}**…")
+    idioma = detectar_idioma(termo)
+    msg_busca = f"Buscando **{termo.strip()}** en **{fonte}**…" if idioma == "es" else f"Buscando **{termo.strip()}** em **{fonte}**…"
+    st.info(msg_busca)
 
     # Busca conforme fonte
     try:
         if fonte == "Datos Generales":
-            raw   = _openalex_search(q)
+            raw   = _openalex_search(termo.strip())
             itens = [_openalex_parse(r) for r in raw]
 
         elif fonte == "OLACEFS Biblioteca":
-            raw   = search_biblioteca(q)
+            raw   = search_biblioteca(termo.strip())
             itens = [parse_biblioteca_item(r) for r in raw]
 
-        else:  # segurança
-            st.error("Fonte desconhecida.")
+        else:
+            msg = "Fuente desconocida." if idioma == "es" else "Fonte desconhecida."
+            st.error(msg)
             return
     except Exception as exc:
-        st.error(f"[{fonte}] {exc}")
+        msg = f"[{fonte}] Error: {exc}" if idioma == "es" else f"[{fonte}] Erro: {exc}"
+        st.error(msg)
         return
 
-    # Salva histórico
-    add_search_history(q, f"Artigos_{fonte}")
+    add_search_history(termo.strip(), f"Artigos_{fonte}")
 
     if not itens:
-        st.warning("No se encontraron resultados.")
+        msg = "No se encontraron resultados." if idioma == "es" else "Nenhum resultado encontrado."
+        st.warning(msg)
         return
 
     df = pd.DataFrame(itens)
@@ -147,58 +161,59 @@ def show_artigos() -> None:
     if "year" in df:
         df_year = (
             df["year"].value_counts()
-            .rename_axis("Año")
-            .reset_index(name="Frecuencia")
-            .sort_values("Año")
+            .rename_axis("Año" if idioma == "es" else "Ano")
+            .reset_index(name="Frecuencia" if idioma == "es" else "Frequência")
+            .sort_values("Año" if idioma == "es" else "Ano")
         )
         st.sidebar.altair_chart(
             alt.Chart(df_year)
             .mark_bar()
-            .encode(x="Año:N", y="Frecuencia:Q"),
+            .encode(x="Año:N" if idioma == "es" else "Ano:N", y="Frecuencia:Q" if idioma == "es" else "Frequência:Q"),
             use_container_width=True,
         )
 
     insts = collections.Counter(i for lst in df["institutions"] for i in (lst or []))
     if insts:
-        st.sidebar.subheader("Instituciones")
+        st.sidebar.subheader("Instituciones" if idioma == "es" else "Instituições")
         st.sidebar.table(
-            pd.DataFrame(insts.most_common(5), columns=["Institución", "Freq"])
+            pd.DataFrame(insts.most_common(5), columns=["Institución" if idioma == "es" else "Instituição", "Freq"])
         )
 
     types = df["type"].value_counts().reset_index()
     types.columns = ["Tipo", "Freq"]
     st.sidebar.subheader("Formato / tipo")
-    st.sidebar.table(types)
 
-    # Resultados
-    st.subheader("Resultados")
+    st.subheader("Resultados" if idioma == "es" else "Resultados")
     for i, row in enumerate(itens, 1):
         st.markdown(f"### {i}. {row['title']}")
         if row["date"]:
-            st.write("**Fecha:**", row["date"])
+            st.write("**Fecha:**" if idioma == "es" else "**Data:**", row["date"])
         if row["institutions"]:
-            st.write("**Institución:**", ", ".join(row["institutions"]))
+            st.write("**Institución:**" if idioma == "es" else "**Instituição:**", ", ".join(row["institutions"]))
         st.write("**Tipo:**", row["type"])
-        st.write("**Resumen / descripción:**", row["abstract"][:400], "…")
-        st.markdown(f"[Enlace]({row['url']})")
+        st.write("**Resumen / descripción:**" if idioma == "es" else "**Resumo / descrição:**", row["abstract"][:400], "…")
+        st.markdown(f"[Enlace]({row['url']})" if idioma == "es" else f"[Link]({row['url']})")
         st.markdown("---")
 
     # Sugestões
     df_hist = carregar_historico()
     if not df_hist.empty:
-        df_clusterizado, modelo_kmeans = gerar_clusters_termos(df_hist)
-        sugestoes = termos_relacionados(q, df_clusterizado, modelo_kmeans)
-        if sugestoes:
-            st.subheader("🔁 Sugestões baseadas em sua busca:")
-            for s in sugestoes:
-                st.button(s, on_click=lambda termo=s: _goto_busca(termo))
+        if len(df_hist) >= 5:
+            df_clusterizado, modelo_kmeans = gerar_clusters_termos(df_hist)
+            sugestoes = termos_relacionados(termo.strip(), df_clusterizado, modelo_kmeans)
+            if sugestoes:
+                st.subheader("🔁 Sugerencias basadas en su búsqueda:" if idioma == "es" else "🔁 Sugestões baseadas em sua busca:")
+                for s in sugestoes:
+                    st.button(s, on_click=lambda termo=s: _goto_busca(termo))
+        else:
+            st.sidebar.info("Busque más términos para recibir sugerencias inteligentes." if idioma == "es" else "Busque mais termos para receber sugestões inteligentes.")
 
     # Feedback
     with st.form("fb"):
-        txt = st.text_area("¿Te fue útil la búsqueda?", placeholder="Comentarios…")
+        txt = st.text_area("¿Te fue útil la búsqueda?" if idioma == "es" else "A busca foi útil?", placeholder="Comentarios…" if idioma == "es" else "Comentários…")
         if st.form_submit_button("Enviar"):
             add_feedback(txt, f"Artigos_{fonte}")
-            st.success("¡Gracias!")
+            st.success("¡Gracias!" if idioma == "es" else "Obrigado!")
 
 # Alias para buscadores.py
 def show_inteligente(): show_artigos()
