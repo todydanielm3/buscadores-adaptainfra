@@ -92,20 +92,10 @@ def show_artigos() -> None:
     # Formulário
     with st.form("form_busca", clear_on_submit=False):
         termo = st.text_input("Término")
-        tema  = st.selectbox(
-            "Tema",
-            ["Sin",
-             "INFRAESTRUCTURA SOSTENIBLE, SOCIAL",
-             "INFRAESTRUCTURA SOSTENIBLE, ECONÓMICO",
-             "INFRAESTRUCTURA SOSTENIBLE, AMBIENTAL",
-             "INFRAESTRUCTURA SOSTENIBLE, TÉCNICO",
-             "INFRAESTRUCTURA SOSTENIBLE, POLÍTICO Y GUBERNAMENTAL",
-             "INFRAESTRUCTURA SOSTENIBLE, REGIÓN AMAZÓNICA",
-             "INFRAESTRUCTURA SOSTENIBLE, AUDITORÍA"]
-        )
+        # Removido o filtro de tema
         fonte = st.radio(
             "Fuente de datos",
-            ["Datos Generales", "OLACEFS Biblioteca", "IDI"],
+            ["Datos Generales", "OLACEFS Biblioteca"],  # Removido "IDI"
             horizontal=True,
         )
         col1, col2 = st.columns(2)
@@ -122,7 +112,7 @@ def show_artigos() -> None:
         st.warning("Ingrese un término de búsqueda.")
         return
 
-    q = f"{termo.strip()} {tema}" if tema != "Sin" else termo.strip()
+    q = termo.strip()  # Removido tema do termo
     st.info(f"Buscando **{q}** en **{fonte}**…")
 
     # Busca conforme fonte
@@ -134,10 +124,6 @@ def show_artigos() -> None:
         elif fonte == "OLACEFS Biblioteca":
             raw   = search_biblioteca(q)
             itens = [parse_biblioteca_item(r) for r in raw]
-
-        elif fonte == "IDI":
-            raw   = search_idi_documents(q, rows=200)
-            itens = [parse_idi_item(r) for r in raw]
 
         else:  # segurança
             st.error("Fonte desconhecida.")
