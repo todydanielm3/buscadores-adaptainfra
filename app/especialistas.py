@@ -2,6 +2,20 @@ import streamlit as st
 import requests
 from pathlib import Path
 from db import add_search_history, add_feedback
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
+class SearchHistory(Base):
+    __tablename__ = "search_history"
+    id = Column(Integer, primary_key=True)
+    termo = Column(String)
+    contexto = Column(String)
+    data = Column(DateTime)
+
+engine = create_engine("sqlite:///seu_banco.db")
+Base.metadata.create_all(engine)
 
 def get_base64_image(file_path: str) -> str:
     full_path = Path(__file__).parent.parent / file_path
