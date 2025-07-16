@@ -78,7 +78,7 @@ def show_chatbot() -> None:
             transport="rest",           # ← CORREÇÃO
         )
         st.session_state.qa_chain = RetrievalQA.from_chain_type(
-            llm=llm, retriever=st.session_state.retriever, return_source_documents=false
+            llm=llm, retriever=st.session_state.retriever, return_source_documents=False
         )
 
     if "gemini_llm" not in st.session_state:
