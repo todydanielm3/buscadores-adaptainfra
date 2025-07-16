@@ -4,9 +4,6 @@ from pathlib import Path
 import streamlit as st
 from dotenv import load_dotenv
 import re
-import sys
-
-sys.path.append(str(Path(__file__).parent.parent))
 
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
@@ -165,7 +162,6 @@ def show_chatbot() -> None:
                     resposta_lower = resposta.strip().lower() if resposta else ""
 
                     padroes_fora_contexto = [
-                        # Português
                         "não sei",
                         "não sei responder",
                         "não tenho essa informação",
@@ -236,86 +232,12 @@ def show_chatbot() -> None:
                         "não há informações disponíveis no momento armazenadas",
                         "sinto muito",
                         "desculpe",
-                        # Espanhol
-                        "no sé",
-                        "no sé responder",
-                        "no tengo esa información",
-                        "lo siento, no sé responder a eso.",
-                        "no encontré",
-                        "no hay información",
-                        "no hay informaciones",
-                        "no poseo información",
-                        "no poseo esa información",
-                        "no fue posible encontrar",
-                        "no localicé",
-                        "no existe información",
-                        "no hay datos",
-                        "no hay registros",
-                        "no hay conocimiento",
-                        "no hay contexto",
-                        "no hay respuesta",
-                        "no tengo conocimiento",
-                        "no tengo datos",
-                        "no tengo registro",
-                        "no tengo contexto",
-                        "no tengo respuesta",
-                        "no fue encontrado",
-                        "no fue localizada",
-                        "no fue posible localizar",
-                        "no fue posible responder",
-                        "no hay información sobre",
-                        "no hay información disponible",
-                        "no hay información relevante",
-                        "no hay información en este contexto",
-                        "no hay información para",
-                        "no hay información en el contexto",
-                        "no hay información suficiente",
-                        "no hay información específica",
-                        "no hay información detallada",
-                        "no hay información relacionada",
-                        "no hay información pertinente",
-                        "no hay información encontrada",
-                        "no hay información registrada",
-                        "no hay información almacenada",
-                        "no hay información disponible en este momento",
-                        "no hay información disponible para",
-                        "no hay información disponible sobre",
-                        "no hay información disponible en este contexto",
-                        "no hay información disponible en el contexto",
-                        "no hay información disponible suficiente",
-                        "no hay información disponible específica",
-                        "no hay información disponible detallada",
-                        "no hay información disponible relacionada",
-                        "no hay información disponible pertinente",
-                        "no hay información disponible encontrada",
-                        "no hay información disponible registrada",
-                        "no hay información disponible almacenada",
-                        "no hay información disponible en este momento para",
-                        "no hay información disponible en este momento sobre",
-                        "no hay información disponible en este momento en este contexto",
-                        "no hay información disponible en este momento en el contexto",
-                        "no hay información disponible en este momento suficiente",
-                        "no hay información disponible en este momento específica",
-                        "no hay información disponible en este momento detallada",
-                        "no hay información disponible en este momento relacionada",
-                        "no hay información disponible en este momento pertinente",
-                        "no hay información disponible en este momento encontrada",
-                        "no hay información disponible en este momento registrada",
-                        "no hay información disponible en este momento almacenada",
-                        "lo siento",
-                        "disculpa",
-                        "lo siento, pero no tengo información",
-                        "lo siento, pero no tengo informação",
-                        "lo siento, mas não tenho informação",
-                        "lo siento, mas não tenho informação sobre",
-                        "desculpe, não tenho essa informação",
-                        "desculpe, não tenho essa informação sobre",
                     ]
 
                     # Detecta idioma do prompt
                     idioma = detectar_idioma(prompt)
                     if idioma == "es":
-                        system_prompt = "Responde siempre en español, de forma clara e objetiva."
+                        system_prompt = "Responde sempre em español, de forma clara e objetiva."
                     else:
                         system_prompt = "Responda sempre em português, de forma clara e objetiva."
 
@@ -324,9 +246,10 @@ def show_chatbot() -> None:
                         not resposta
                         or any(p in resposta_lower for p in padroes_fora_contexto)
                     ):
-                        # Inclua a instrução no próprio prompt
-                        prompt_completo = f"{system_prompt}\n\n{prompt}"
-                        resposta = st.session_state.gemini_llm.invoke(prompt_completo)
+                        resposta = st.session_state.gemini_llm.invoke(
+                            prompt,
+                            system_instruction=system_prompt
+                        )
                         if hasattr(resposta, "content"):
                             resposta = resposta.content
 
