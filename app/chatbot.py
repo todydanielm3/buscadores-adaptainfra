@@ -3,10 +3,13 @@ from pathlib import Path
 import streamlit as st
 from dotenv import load_dotenv
 
-from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain_core.documents import Document
-from langchain.chains import RetrievalQA
+# Importações condicionais para o Gemini
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    GEMINI_AVAILABLE = True
+except ImportError:
+    GEMINI_AVAILABLE = False
+    print("Gemini não disponível - modo simplificado ativado")
 
 # ─────────── Chave da API ─────────────────────────────────────
 load_dotenv()
@@ -38,56 +41,68 @@ def _detectar_idioma(txt: str) -> str:
 
 # ─────────── Função principal ─────────────────────────────────
 def show_chatbot() -> None:
+    # Verificar se há pergunta na URL
+    question_from_url = st.query_params.get("question", "")
+    
     mini_logo_b64 = _img_b64(IMG_PATH)
 
-    # HTML/CSS do chatbot flutuante (igual ao seu)
+    # Interface visual do chatbot
     st.markdown(
-        """<style>
-        .chatbot-container{position:fixed;bottom:20px;right:20px;width:350px;max-height:600px;
-        border:1px solid #ccc;border-radius:10px;background:#fff;z-index:1000;
-        box-shadow:0 4px 12px rgba(0,0,0,.15);font-family:'Segoe UI',sans-serif}
-        .chat-message{background:#f1f1f1;margin-bottom:8px;padding:8px 10px;border-radius:8px;
-        max-width:90%;display:flex;align-items:flex-start}
-        .chat-user{background:#DCF8C6;margin-left:auto;text-align:right;justify-content:flex-end}
-        .chatbot-avatar{width:24px;height:24px;margin-right:8px;border-radius:12px}
-        .chatbot-text{flex:1}
-        </style>""",
-        unsafe_allow_html=True,
+        f"""
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img src="data:image/png;base64,{mini_logo_b64}" width="80">
+            <h1 style="font-family: 'Roboto', sans-serif; color: #333;">OLABOT</h1>
+            <p style="font-family: 'Roboto', sans-serif;">Assistente Inteligente OLACEFS</p>
+        </div>
+        
+        <style>
+        .chat-message {{
+            display: flex;
+            align-items: flex-start;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+        }}
+        .chat-user {{
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+            max-width: 70%;
+            justify-content: flex-end;
+        }}
+        .chatbot-avatar {{
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }}
+        .chatbot-text {{
+            flex: 1;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
     )
 
     # ───── Session state ──────────────────────────────
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    if "retriever" not in st.session_state:
-        embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
-            google_api_key=API_KEY,
-            transport="rest",           # ← CORREÇÃO
-        )
-        db = FAISS.load_local(
-            "adapta_chatbot/vectordb", embeddings, allow_dangerous_deserialization=True
-        )
-        st.session_state.retriever = db.as_retriever(search_kwargs={"k": 4})
-
-    if "qa_chain" not in st.session_state:
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
-            google_api_key=API_KEY,
-            temperature=0.2,
-            transport="rest",           # ← CORREÇÃO
-        )
-        st.session_state.qa_chain = RetrievalQA.from_chain_type(
-            llm=llm, retriever=st.session_state.retriever, return_source_documents=False
-        )
-
-    if "gemini_llm" not in st.session_state:
-        st.session_state.gemini_llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
-            google_api_key=API_KEY,
-            temperature=0.7,
-            transport="rest",           # ← CORREÇÃO
-        )
+    # ───── LLM simplificado (sem RAG) ─────────────────────────────
+    if "gemini_llm" not in st.session_state and API_KEY and GEMINI_AVAILABLE:
+        try:
+            st.session_state.gemini_llm = ChatGoogleGenerativeAI(
+                model="gemini-1.5-flash",
+                google_api_key=API_KEY,
+                temperature=0.7,
+                transport="rest",
+            )
+        except Exception as e:
+            st.session_state.gemini_llm = None
+            print(f"Erro ao inicializar Gemini: {e}")
+    elif not API_KEY or not GEMINI_AVAILABLE:
+        st.session_state.gemini_llm = None
 
     # ───── Render histórico ───────────────────────────
     for m in st.session_state.chat_history:
@@ -103,29 +118,76 @@ def show_chatbot() -> None:
             )
 
     # ───── Entrada do usuário ─────────────────────────
-    prompt = st.chat_input("Mensagem ao Chatbot:")
-    if not prompt:
+    # Se há pergunta da URL, processar automaticamente
+    if question_from_url and not st.session_state.get("url_question_processed", False):
+        prompt = question_from_url
+        st.session_state.url_question_processed = True
+        # Limpar o parâmetro da URL para evitar repetição  
+        st.query_params.pop("question", None)
+        
+        # Mostrar a pergunta do usuário
+        st.markdown(f"<div class='chat-message chat-user'>{prompt}</div>",
+                    unsafe_allow_html=True)
+        
+        # Processar automaticamente
+        auto_process = True
+    else:
+        prompt = st.chat_input("Mensagem ao Chatbot:")
+        auto_process = False
+    
+    # ───── Botão Voltar logo abaixo da barra de entrada ─────────────────────────
+    if not prompt and not auto_process:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🏠 Voltar ao Menu"):
+            st.session_state.page = "menu"
+            st.query_params.update({"page": "menu"})
+            st.rerun()
         return
 
-    st.session_state.chat_history.append({"role": "user", "content": prompt})
+    # ───── Rodapé no final da página ─────────────────────────
+    st.markdown(
+        """
+        """,
+        unsafe_allow_html=True
+    )
+    
+    if not prompt and not auto_process:
+        return
 
-    with st.spinner("Analisando..."):
-        try:
-            resposta = st.session_state.qa_chain.run(prompt)
-        except Exception as exc:
-            st.error(f"Erro na cadeia RAG: {exc}")
-            resposta = ""
+    # Processar mensagem (tanto manual quanto automática)
+    if prompt:
+        st.session_state.chat_history.append({"role": "user", "content": prompt})
 
-        if not resposta or resposta.strip().lower().startswith(("não sei", "no sé")):
-            idioma = _detectar_idioma(prompt)
-            sys_prompt = ("Responde siempre en español, de forma clara y objetiva."
-                          if idioma == "es"
-                          else "Responda sempre em português, de forma clara e objetiva.")
+        with st.spinner("Analisando..."):
             try:
-                resp = st.session_state.gemini_llm.invoke(prompt, system_instruction=sys_prompt)
-                resposta = getattr(resp, "content", str(resp))
+                if st.session_state.gemini_llm:
+                    # Detectar idioma e configurar resposta
+                    idioma = _detectar_idioma(prompt)
+                    sys_prompt = ("Eres OLABOT, un asistente de OLACEFS especializado en auditoría, "
+                                 "infraestrutura sustentável e transparência. Responde siempre en español, "
+                                 "de forma clara, útil e profissional."
+                                 if idioma == "es"
+                                 else "Você é OLABOT, um assistente da OLACEFS especializado em auditoria, "
+                                 "infraestrutura sustentável e transparência. Responda sempre em português, "
+                                 "de forma clara, útil e profissional.")
+                    
+                    # Contexto específico para OLASIS
+                    context = f"{sys_prompt}\n\nContexto: OLASIS é o Sistema de Información Sostenible da OLACEFS."
+                    full_prompt = f"{context}\n\nPergunta: {prompt}"
+                    
+                    resp = st.session_state.gemini_llm.invoke(full_prompt)
+                    resposta = getattr(resp, "content", str(resp))
+                else:
+                    # Resposta padrão sem API
+                    resposta = ("¡Hola! Soy OLABOT de OLACEFS. Actualmente estoy en modo simplificado. "
+                               "¿En qué puedo ayudarte com informações sobre auditoria e infraestrutura sustentável?"
+                               if _detectar_idioma(prompt) == "es"
+                               else "Olá! Sou OLABOT da OLACEFS. Atualmente estou em modo simplificado. "
+                               "Como posso ajudar com informações sobre auditoria e infraestrutura sustentável?")
             except Exception as exc:
-                resposta = f"Desculpe, ocorreu um erro inesperado: {exc}"
+                resposta = (f"Disculpa, ocurrió un error inesperado. Por favor, intenta de nuevo."
+                           if _detectar_idioma(prompt) == "es"
+                           else f"Desculpe, ocorreu um erro inesperado. Por favor, tente novamente.")
 
-    st.session_state.chat_history.append({"role": "model", "content": resposta})
-    st.rerun()
+        st.session_state.chat_history.append({"role": "model", "content": resposta})
+        st.rerun()

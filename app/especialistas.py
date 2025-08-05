@@ -77,6 +77,9 @@ PAISES_LATINO_CARIBE = [
 ]
 
 def show_especialistas():
+    # Verificar se há busca na URL
+    search_from_url = st.query_params.get("search", "")
+    
     logo_base64 = get_base64_image("assets/logo.png")
     st.markdown(
         f"""
@@ -91,11 +94,20 @@ def show_especialistas():
     
     # Formulário para búsqueda
     with st.form(key="search_form_especialistas", clear_on_submit=False):
-        especialidad = st.text_input("Especialidad", placeholder="Ingrese la especialidad...")
+        # Usar busca da URL como valor inicial se existir
+        especialidad = st.text_input("Especialidad", value=search_from_url, placeholder="Ingrese la especialidad...")
         pais = st.selectbox("País", ["Todos"] + PAISES_LATINO_CARIBE)
         col1, col2 = st.columns(2)
         buscar_pressed = col1.form_submit_button("Buscar")
         volver_pressed = col2.form_submit_button("Volver al menú")
+    
+    # Se há busca da URL, executar automaticamente
+    if search_from_url and not buscar_pressed:
+        especialidad = search_from_url
+        pais = "Todos"  # País padrão
+        buscar_pressed = True
+        # Limpar o parâmetro de busca da URL para evitar repetição
+        st.query_params.pop("search", None)
     
     if volver_pressed:
         st.session_state.page = "menu"

@@ -1,0 +1,579 @@
+/* ================================================
+   OLASIS - Sistema de Información Sostenible
+   Modern UI Styles - Versão 2025
+   ================================================ */
+
+/* --- Reset e Configurações Globais --- */
+:root {
+    --color-ola: #004FA5;
+    --color-sis: #0072BB;
+    --color-active-link: #00ACEC;
+    --color-text: #333;
+    --color-background: #FFFFFF;
+    --color-gray-light: #f8f9fa;
+    --color-gray-medium: #e9ecef;
+    --color-gray-dark: #6c757d;
+    --font-main: 'Arial Narrow', Arial, sans-serif;
+    --font-logo: 'Poppins', sans-serif;
+    --shadow-light: 0 2px 10px rgba(0,0,0,0.1);
+    --shadow-medium: 0 4px 15px rgba(0, 114, 187, 0.3);
+    --shadow-heavy: 0 6px 20px rgba(0, 114, 187, 0.4);
+    --border-radius: 12px;
+    --border-radius-large: 50px;
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* Importação da fonte Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Reset do Streamlit */
+.stApp {
+    background-color: var(--color-background);
+    font-family: var(--font-main);
+}
+
+/* Ocultar elementos padrão do Streamlit */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+/* ================================================
+   COMPONENTES PRINCIPAIS
+   ================================================ */
+
+/* Container principal */
+.main-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    font-family: var(--font-main);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Cabeçalho moderno */
+.modern-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2.5rem;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-gray-medium);
+    transition: var(--transition-medium);
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    text-decoration: none;
+    color: var(--color-text);
+    transition: var(--transition-medium);
+}
+
+.logo-section:hover {
+    transform: scale(1.05);
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-sis), var(--color-ola));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    box-shadow: var(--shadow-light);
+    transition: var(--transition-medium);
+}
+
+.logo-icon:hover {
+    box-shadow: var(--shadow-medium);
+    transform: rotate(5deg);
+}
+
+.logo-text {
+    font-family: var(--font-logo);
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--color-ola);
+}
+
+/* ================================================
+   NAVEGAÇÃO
+   ================================================ */
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    position: relative;
+    text-decoration: none;
+    color: var(--color-text);
+    font-size: 1rem;
+    padding: 0.5rem;
+    transition: color var(--transition-medium);
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.nav-link:hover {
+    color: var(--color-sis);
+    background-color: rgba(0, 114, 187, 0.05);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--color-active-link);
+    transform: scaleX(0);
+    transition: transform var(--transition-medium);
+    transform-origin: center;
+    border-radius: 2px;
+}
+
+.nav-link:hover::after {
+    transform: scaleX(1);
+}
+
+/* ================================================
+   LOGO E BRANDING
+   ================================================ */
+
+.main-logo {
+    margin-bottom: 2.5rem;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.main-logo h1 {
+    font-family: var(--font-logo);
+    font-weight: 600;
+    font-size: 4rem;
+    letter-spacing: 2px;
+    color: var(--color-ola);
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.main-logo h1::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-ola), var(--color-sis));
+    border-radius: 2px;
+    opacity: 0.7;
+}
+
+.logo-highlight {
+    color: var(--color-sis);
+    position: relative;
+}
+
+.tagline {
+    font-size: 1.25rem;
+    color: var(--color-gray-dark);
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
+/* ================================================
+   BUSCA MODERNA
+   ================================================ */
+
+.search-container {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    animation: fadeInUp 1s ease-out 0.1s both;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1.2rem 3rem 1.2rem 2rem;
+    font-size: 1.1rem;
+    border: 2px solid #dfe1e5;
+    border-radius: var(--border-radius-large);
+    background-color: white;
+    box-shadow: var(--shadow-light);
+    outline: none;
+    font-family: var(--font-main);
+    transition: all var(--transition-medium);
+}
+
+.search-input:focus {
+    border-color: var(--color-sis);
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.search-input::placeholder {
+    color: var(--color-gray-dark);
+    opacity: 0.7;
+}
+
+.search-button {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: all var(--transition-medium);
+    border-radius: 50%;
+}
+
+.search-button:hover {
+    background-color: rgba(0, 114, 187, 0.1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.search-button:hover svg {
+    stroke: var(--color-sis);
+}
+
+/* ================================================
+   BOTÕES E AÇÕES
+   ================================================ */
+
+.action-buttons {
+    display: flex;
+    gap: 2rem;
+    margin-top: 3rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+/* Customizações específicas para botões Streamlit */
+.stButton > button {
+    background: linear-gradient(135deg, var(--color-sis), var(--color-ola)) !important;
+    color: white !important;
+    border: none !important;
+    padding: 1rem 2rem !important;
+    border-radius: var(--border-radius-large) !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all var(--transition-medium) !important;
+    box-shadow: var(--shadow-medium) !important;
+    width: 100% !important;
+    height: 60px !important;
+    font-family: var(--font-main) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.stButton > button::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+    transition: left 0.5s !important;
+}
+
+.stButton > button:hover::before {
+    left: 100% !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-heavy) !important;
+    background: linear-gradient(135deg, #0080CC, #0056A3) !important;
+}
+
+.stButton > button:active {
+    transform: translateY(0) !important;
+}
+
+.stButton > button:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(0, 114, 187, 0.2) !important;
+}
+
+/* ================================================
+   INFO BOXES
+   ================================================ */
+
+.info-section {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 1.2s ease-out 0.4s both;
+}
+
+.info-box {
+    font-size: 1rem;
+    color: var(--color-background);
+    background: linear-gradient(135deg, var(--color-sis), var(--color-active-link));
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 25px;
+    box-shadow: var(--shadow-light);
+    font-weight: 500;
+    transition: all var(--transition-medium);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.info-box:hover::before {
+    left: 100%;
+}
+
+.info-box:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: var(--shadow-medium);
+}
+
+/* ================================================
+   ANIMAÇÕES
+   ================================================ */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ================================================
+   RESPONSIVIDADE
+   ================================================ */
+
+@media (max-width: 768px) {
+    .modern-header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+    }
+    
+    .nav-links {
+        gap: 1rem;
+    }
+    
+    .nav-link {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .main-logo h1 {
+        font-size: 2.5rem;
+    }
+    
+    .tagline {
+        font-size: 1rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+    
+    .stColumns {
+        flex-direction: column !important;
+    }
+    
+    .stColumn {
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .stButton > button {
+        width: 100% !important;
+        max-width: 300px !important;
+        margin: 0 auto !important;
+    }
+    
+    .info-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .search-container {
+        max-width: 90%;
+    }
+    
+    .search-input {
+        font-size: 1rem;
+        padding: 1rem 2.5rem 1rem 1.5rem;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .stColumns {
+        gap: 0.5rem !important;
+    }
+    
+    .stButton > button {
+        font-size: 1rem !important;
+        padding: 0.8rem 1.5rem !important;
+    }
+    
+    .main-logo h1 {
+        font-size: 3.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .main-container {
+        padding: 3rem;
+    }
+    
+    .main-logo h1 {
+        font-size: 5rem;
+    }
+    
+    .tagline {
+        font-size: 1.4rem;
+    }
+    
+    .search-container {
+        max-width: 700px;
+    }
+}
+
+/* ================================================
+   TEMA ESCURO (Opcional)
+   ================================================ */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-background: #1a1a1a;
+        --color-text: #ffffff;
+        --color-gray-light: #2d2d2d;
+        --color-gray-medium: #404040;
+        --color-gray-dark: #a0a0a0;
+    }
+    
+    .modern-header {
+        background: rgba(26, 26, 26, 0.95);
+        border-bottom: 1px solid var(--color-gray-medium);
+    }
+    
+    .search-input {
+        background-color: var(--color-gray-light);
+        color: var(--color-text);
+        border-color: var(--color-gray-medium);
+    }
+}
+
+/* ================================================
+   UTILIDADES
+   ================================================ */
+
+.hidden {
+    display: none !important;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-2 {
+    margin-top: 2rem;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-heavy);
+}

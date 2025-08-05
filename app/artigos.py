@@ -88,6 +88,9 @@ def detectar_idioma(texto: str) -> str:
     return "pt"
 
 def show_artigos() -> None:
+    # Verificar se há busca na URL
+    search_from_url = st.query_params.get("search", "")
+    
     # Cabeçalho
     st.markdown(
         f"""
@@ -101,7 +104,8 @@ def show_artigos() -> None:
 
     # Formulário
     with st.form("form_busca", clear_on_submit=False):
-        termo = st.text_input("Término")
+        # Usar busca da URL como valor inicial se existir
+        termo = st.text_input("Término", value=search_from_url)
         fonte = st.radio(
             "Fuente de datos",
             ["Datos Generales", "OLACEFS Biblioteca"],
@@ -110,6 +114,14 @@ def show_artigos() -> None:
         col1, col2 = st.columns(2)
         ok   = col1.form_submit_button("Buscar")
         menu = col2.form_submit_button("Volver al menú")
+
+    # Se há busca da URL, executar automaticamente
+    if search_from_url and not ok:
+        termo = search_from_url
+        fonte = "Datos Generales"  # Fonte padrão
+        ok = True
+        # Limpar o parâmetro de busca da URL para evitar repetição
+        st.query_params.pop("search", None)
 
     if menu:
         st.session_state.page = "menu"

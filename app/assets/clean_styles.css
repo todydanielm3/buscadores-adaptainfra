@@ -1,0 +1,173 @@
+/* CSS Simplificado e Limpo para OLASIS */
+
+:root {
+    --color-ola: #004FA5;
+    --color-sis: #0072BB;
+    --color-active-link: #00ACEC;
+    --color-text: #333;
+    --color-background: #FFFFFF;
+    --color-gray-light: #f8f9fa;
+    --color-gray-medium: #e9ecef;
+    --color-gray-dark: #6c757d;
+    --font-main: 'Arial', sans-serif;
+    --font-logo: 'Arial', sans-serif;
+}
+
+/* Reset básico */
+.stApp {
+    background-color: var(--color-background) !important;
+}
+
+/* Ocultar elementos padrão do Streamlit */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+.stDeployButton {display: none;}
+
+/* Container principal centralizado */
+.main-container {
+    padding: 2rem 1rem;
+    text-align: center;
+    font-family: var(--font-main);
+}
+
+/* Logo principal */
+.main-logo h1 {
+    font-family: var(--font-logo);
+    font-weight: 600;
+    font-size: 3.5rem;
+    letter-spacing: 2px;
+    color: var(--color-ola);
+    margin: 1rem 0;
+}
+
+.logo-highlight {
+    color: var(--color-sis);
+}
+
+.tagline {
+    font-size: 1.2rem;
+    color: var(--color-gray-dark);
+    margin-bottom: 2rem;
+}
+
+/* Barra de busca */
+.search-container {
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border: 2px solid #dfe1e5;
+    border-radius: 50px;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    outline: none;
+    font-family: var(--font-main);
+}
+
+.search-input:focus {
+    border-color: var(--color-sis);
+    box-shadow: 0 4px 15px rgba(0, 114, 187, 0.2);
+}
+
+/* Botões Streamlit personalizados */
+.stButton > button {
+    background: linear-gradient(135deg, var(--color-sis), var(--color-ola)) !important;
+    color: white !important;
+    border: none !important;
+    padding: 1rem 2rem !important;
+    border-radius: 50px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(0, 114, 187, 0.3) !important;
+    width: 100% !important;
+    height: 60px !important;
+    font-family: var(--font-main) !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 114, 187, 0.4) !important;
+    background: linear-gradient(135deg, #0080CC, #0056A3) !important;
+}
+
+/* Info boxes */
+.info-section {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.info-box {
+    font-size: 1rem;
+    color: var(--color-background);
+    background-color: var(--color-sis);
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    font-weight: 500;
+}
+
+/* Cabeçalho simples */
+.header-simple {
+    text-align: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-gray-medium);
+    margin-bottom: 1rem;
+}
+
+.nav-btn {
+    background: none;
+    border: 1px solid var(--color-gray-medium);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 0.5rem;
+}
+
+.nav-btn:hover {
+    background-color: var(--color-sis);
+    color: white;
+}
+
+.nav-btn.active {
+    background-color: var(--color-sis);
+    color: white;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .main-logo h1 {
+        font-size: 2.5rem;
+    }
+    
+    .tagline {
+        font-size: 1rem;
+    }
+    
+    .search-container {
+        max-width: 90%;
+    }
+    
+    .info-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+    }
+}
+
+/* Animações suaves */
+* {
+    transition: all 0.3s ease;
+}
